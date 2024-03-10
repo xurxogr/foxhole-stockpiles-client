@@ -1,10 +1,13 @@
+from io import BytesIO
 import threading
 
+from httpx import Client
+from httpx import Timeout
 from mss import mss
-from mss.tools import to_png
-import ttkbootstrap as tb
+from PIL import Image
 from pynput import keyboard
 import pywinctl
+import ttkbootstrap as tb
 
 from foxhole_stockpiles.models.keypress import KeyPress
 from foxhole_stockpiles.config.settings import Settings
@@ -36,7 +39,7 @@ class App(tb.Window):
         key_entry.grid(row=0, column=1, sticky=tb.E + tb.W)
 
         # Server URL
-        label = tb.Label(options_frame, text="Server URL").grid(row=1, column=0)
+        tb.Label(options_frame, text="Server URL").grid(row=1, column=0)
         self.__url_entry = tb.Entry(options_frame, name='url', textvariable=self.__url_text)
         self.__url_entry.grid(row=1, column=1, sticky=tb.E + tb.W)
 
@@ -140,6 +143,33 @@ class App(tb.Window):
                 self.__thread = None
 
     def screenshot(self):
+        img = self.__screenshot()
+        if not img:
+            return
+
+        # Open a new thread to avoid blocking the execution
+        threading.Thread(target=self.__send_image, args=(img,)).start()
+
+    def __send_image(self, img):
+        """
+        Sends an image to foxhole_stockpiles server
+        :param img: Image to send
+        """
+        timeout = Timeout(10.0, read=30.0)
+        base_url = self.__url_text.get()
+        headers = {"API_KEY": self.__token_text.get()}
+        with Client(base_url=base_url, headers=headers, verify=False, timeout=timeout) as client:
+            try:
+                response = client.post(
+                    url="/ocr/scan_image",
+                    files={'image': ('screenshot.png', img, 'image/png')}
+                )
+            except Exception:
+                print("Error sending the image.")
+            else:
+                print("Image sent")
+
+    def __screenshot(self):
         """
         Take an screeshot of Foxhole
         """
@@ -147,17 +177,25 @@ class App(tb.Window):
             foxhole = pywinctl.getWindowsWithTitle(title="War", condition=pywinctl.Re.STARTSWITH)[0]
         except Exception:
             print("Foxhole is not running")
-            return
+            return None
 
         if foxhole.isMinimized:
             print("Foxhole is minimized")
-            return
+            return None
 
         if not foxhole.isActive:
             print("Foxhole should be the active window")
-            return
+            return None
 
+        img = None
         with mss() as sct:
             sct_img = sct.grab(foxhole.getClientFrame())
-            to_png(sct_img.rgb, sct_img.size, output="screenshot.png")
+            img = Image.frombytes("RGB", sct_img.size, sct_img.bgra, "raw", "BGRX")
+            byte_io = BytesIO()
+            img.save(byte_io, 'png')
+            byte_io.seek(0)
             print("Screenshot taken")
+
+            #to_png(sct_img.rgb, sct_img.size, output="screenshot.png")
+
+        return byte_io
