@@ -167,7 +167,10 @@ class App(tb.Window):
             except Exception:
                 print("Error sending the image.")
             else:
-                print("Image sent")
+                if response.status_code == 200:
+                    print("Image sent")
+                else:
+                    print("Error sending the image. Status_code: {}. Error: {}".format(response.status_code, response.json()))
 
     def __screenshot(self):
         """
