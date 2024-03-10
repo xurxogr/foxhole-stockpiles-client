@@ -26,7 +26,21 @@ class KeyPress():
     def __on_press(self, key):
         """
         callback for pressing keys
-        Keeps trac9k of number of keys pressed removing duplicates
+        Keeps track of number of keys pressed removing duplicates
+
+        It outputs the key in string format.
+        Conversions:
+        - Normal keys: as is. i.e. a
+        - modifier keys and special keys: between <> i.e. <space>, <ctrl>, <pause>
+        - numpad numbers: numpad_X. i.e numpad_8
+        - numpad +: numpad_plus
+        - numpad -: numpad_-
+
+        It allows multiple modifiers and a single non-modifier. Ignores all other keypress after the first non-modifier
+        <ctrl>+a => <ctrl>+a
+        a+<ctrl> => a
+        a+s      => a
+        f4       => <f4>
         """
         if key == Key.esc:
             self.__clean_vars()
@@ -63,6 +77,10 @@ class KeyPress():
                 self.__key = str(canonical_key).replace("'", "")
 
     def read_key(self) -> str:
+        """
+        Reads a new key combination.
+        :returns str: List of keys pressed.
+        """
         self.__clean_vars()
         self.__listener = Listener(on_press=self.__on_press, on_release=self.__on_release)
         with self.__listener:
@@ -78,6 +96,24 @@ class KeyPress():
         return "+".join(key_list)
 
     def prepare_for_global_hotkey(self, keys: str = None) -> str:
+        """
+        Transforms the key read to a format valid for GlobalHotKey
+        GlobalHotkey seems not to like keys like <f3> but works with the vk equivalent
+
+        Replaces all modified values from _on_press to their vk equivalent
+        numpad_[0-9] => <96>...<105>
+        numpad_plus => <107>
+        numpad_- => <109>
+
+        Special keys are modified to their vk equivalent, except the modifiers
+        non special keys are left intact
+
+        <ctrl>+<f3> => <ctrl>+<114>
+        <pause> => <19>
+
+        :param keys: str = List of keys. i.e. <ctrl>+<f3>
+        :returns str = List of keys adapted for GlobalHotKey. i.e. <ctrl>+<114>
+        """
         def _transform(key: str) -> str:
             if 'numpad_' not in key:
                 return key
@@ -88,8 +124,6 @@ class KeyPress():
 
             if _key == '-':
                 return '<109>'
-
-            print(_key)
 
             return "<{}>".format(int(_key) + 96)
 
@@ -105,6 +139,7 @@ class KeyPress():
 
         modified_keys = []
         for index, key in enumerate(parsed_keys):
+            # Change special keys (Non modifiers) to their vk equivalent
             if type(key) != KeyCode and key.name not in {'shift', 'ctrl', 'alt', 'cmd'}:
                 modified_keys.append(str(key.value))
             else:
