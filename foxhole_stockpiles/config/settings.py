@@ -1,18 +1,17 @@
 from configparser import ConfigParser
-from configparser import NoSectionError
-from configparser import NoOptionError
 import json
 import logging
+from typing import Final
 
 from foxhole_stockpiles.config.env_interpolation import EnvInterpolation
 from foxhole_stockpiles.models.singleton.singletonmeta import SingletonMeta
 
 
 class Settings(metaclass=SingletonMeta):
-    __FILE_NAME = 'config.ini'
-    SECTION_KEYBIND = 'KEYBIND'
-    SECTION_SERVER = 'SERVER'
-    SECTION_LOGGING = 'LOGGING'
+    __FILE_NAME: Final = 'config.ini'
+    SECTION_KEYBIND: Final = 'KEYBIND'
+    SECTION_SERVER: Final = 'SERVER'
+    SECTION_LOGGING: Final = 'LOGGING'
 
     # Keybind options
     OPTION_KEY = 'KEY'
