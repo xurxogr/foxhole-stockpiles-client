@@ -1,7 +1,8 @@
 from pynput.keyboard import Listener
+from pynput.keyboard import HotKey
 from pynput.keyboard import Key
 from pynput.keyboard import KeyCode
-from pynput.keyboard import HotKey
+
 
 class KeyPress():
     def __init__(self):
