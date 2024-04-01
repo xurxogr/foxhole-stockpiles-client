@@ -148,13 +148,18 @@ class App(tb.Window):
         Sends an image to foxhole_stockpiles server
         :param img: Image to send
         """
+
+        byte_io = BytesIO()
+        img.save(byte_io, 'png')
+        byte_io.seek(0)
+
         timeout = Timeout(10.0, read=30.0)
         headers = {"API_KEY": self.__token_text.get()}
         with Client(headers=headers, verify=False, timeout=timeout) as client:
             try:
                 response = client.post(
                     url=self.__url,
-                    files={'image': ('screenshot.png', img, 'image/png')}
+                    files={'image': ('screenshot.png', byte_io, 'image/png')}
                 )
             except Exception as ex:
                 self.print(message="Error sending the image. {}".format(str(ex)), error=True)
@@ -191,14 +196,8 @@ class App(tb.Window):
         with mss() as sct:
             sct_img = sct.grab(foxhole.getClientFrame())
             img = Image.frombytes("RGB", sct_img.size, sct_img.bgra, "raw", "BGRX")
-            byte_io = BytesIO()
-            img.save(byte_io, 'png')
-            byte_io.seek(0)
-            print("Screenshot taken")
 
-            #to_png(sct_img.rgb, sct_img.size, output="screenshot.png")
-
-        return byte_io
+        return img
 
     def print(self, message: str, error: bool = False):
         print(message)
