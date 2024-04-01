@@ -8,6 +8,7 @@ from PIL import Image
 from pynput import keyboard
 import pywinctl
 import ttkbootstrap as tb
+from ttkbootstrap.toast import ToastNotification
 
 from foxhole_stockpiles.models.keypress import KeyPress
 from foxhole_stockpiles.config.settings import Settings
@@ -156,12 +157,17 @@ class App(tb.Window):
                     files={'image': ('screenshot.png', img, 'image/png')}
                 )
             except Exception as ex:
-                print("Error sending the image. {}".format(str(ex)))
+                self.print(message="Error sending the image. {}".format(str(ex)), error=True)
             else:
+                try:
+                    text = response.json().get('message')
+                except Exception:
+                    text = response.text
+
                 if response.status_code == 200:
-                    print("Image sent")
+                    self.print(message=text)
                 else:
-                    print("Error sending the image. Status_code: {}. Error: {}".format(response.status_code, response.json()))
+                    self.print(message="Error sending the image. Status_code: {}. Error: {}".format(response.status_code, text), error=True)
 
     def __screenshot(self):
         """
@@ -170,15 +176,15 @@ class App(tb.Window):
         try:
             foxhole = pywinctl.getWindowsWithTitle(title="War", condition=pywinctl.Re.STARTSWITH)[0]
         except Exception:
-            print("Foxhole is not running")
+            self.print(message="Foxhole is not running", error=True)
             return None
 
         if foxhole.isMinimized:
-            print("Foxhole is minimized")
+            self.print(message="Foxhole is minimized", error=True)
             return None
 
         if not foxhole.isActive:
-            print("Foxhole should be the active window")
+            self.print(message="Foxhole should be the active window", error=True)
             return None
 
         img = None
@@ -193,3 +199,14 @@ class App(tb.Window):
             #to_png(sct_img.rgb, sct_img.size, output="screenshot.png")
 
         return byte_io
+
+    def print(self, message: str, error: bool = False):
+        print(message)
+        toast = ToastNotification(
+            title="Foxhole Stockpiles",
+            message=message,
+            duration=5000,
+            alert=error
+        )
+
+        toast.show_toast()
