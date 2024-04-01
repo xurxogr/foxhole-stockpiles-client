@@ -150,10 +150,10 @@ class App(tb.Window):
         """
         timeout = Timeout(10.0, read=30.0)
         headers = {"API_KEY": self.__token_text.get()}
-        with Client(base_url=self.__url, headers=headers, verify=False, timeout=timeout) as client:
+        with Client(headers=headers, verify=False, timeout=timeout) as client:
             try:
                 response = client.post(
-                    url="/fs/ocr/scan_image",
+                    url=self.__url,
                     files={'image': ('screenshot.png', img, 'image/png')}
                 )
             except Exception as ex:

@@ -25,7 +25,7 @@ class Settings(metaclass=SingletonMeta):
     OPTION_LOGGERS: Final = 'loggers'
 
     # Hardcoded values
-    DEFAULT_URL: Final = 'https://fs.veli.team'
+    DEFAULT_URL: Final = 'https://fs.veli.team/fs/ocr/scan_image'
 
     def __init__(self) -> None:
         self.__config_parser = None
