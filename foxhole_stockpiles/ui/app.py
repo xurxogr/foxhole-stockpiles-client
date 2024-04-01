@@ -162,7 +162,7 @@ class App(tb.Window):
                     files={'image': ('screenshot.png', byte_io, 'image/png')}
                 )
             except Exception as ex:
-                self.print(message="Error sending the image. {}".format(str(ex)), error=True)
+                self.__print(message="Error sending the image. {}".format(str(ex)), error=True)
             else:
                 try:
                     text = response.json().get('message')
@@ -170,9 +170,9 @@ class App(tb.Window):
                     text = response.text
 
                 if response.status_code == 200:
-                    self.print(message=text)
+                    self.__print(message=text)
                 else:
-                    self.print(message="Error sending the image. Status_code: {}. Error: {}".format(response.status_code, text), error=True)
+                    self.__print(message="Error sending the image. Status_code: {}. Error: {}".format(response.status_code, text), error=True)
 
     def __screenshot(self):
         """
@@ -181,15 +181,15 @@ class App(tb.Window):
         try:
             foxhole = pywinctl.getWindowsWithTitle(title="War", condition=pywinctl.Re.STARTSWITH)[0]
         except Exception:
-            self.print(message="Foxhole is not running", error=True)
+            self.__print(message="Foxhole is not running", error=True)
             return None
 
         if foxhole.isMinimized:
-            self.print(message="Foxhole is minimized", error=True)
+            self.__print(message="Foxhole is minimized", error=True)
             return None
 
         if not foxhole.isActive:
-            self.print(message="Foxhole should be the active window", error=True)
+            self.__print(message="Foxhole should be the active window", error=True)
             return None
 
         img = None
@@ -199,7 +199,7 @@ class App(tb.Window):
 
         return img
 
-    def print(self, message: str, error: bool = False):
+    def __print(self, message: str, error: bool = False):
         print(message)
         toast = ToastNotification(
             title="Foxhole Stockpiles",
