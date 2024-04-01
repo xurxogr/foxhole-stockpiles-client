@@ -3,8 +3,7 @@ import threading
 
 from httpx import Client
 from httpx import Timeout
-from mss import mss
-from PIL import Image
+from PIL import ImageGrab
 from pynput import keyboard
 import pywinctl
 import ttkbootstrap as tb
@@ -192,12 +191,8 @@ class App(tb.Window):
             self.__print(message="Foxhole should be the active window", error=True)
             return None
 
-        img = None
-        with mss() as sct:
-            sct_img = sct.grab(foxhole.getClientFrame())
-            img = Image.frombytes("RGB", sct_img.size, sct_img.bgra, "raw", "BGRX")
-
-        return img
+        region=foxhole.getClientFrame()
+        return ImageGrab.grab(bbox=region, all_screens=True)
 
     def __print(self, message: str, error: bool = False):
         print(message)

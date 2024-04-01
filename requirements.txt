@@ -1,11 +1,11 @@
+# pip install httpx pywinctl pynput ttkbootstrap
 anyio==4.3.0
 certifi==2024.2.2
 h11==0.14.0
-httpcore==1.0.4
+httpcore==1.0.5
 httpx==0.27.0
 idna==3.6
-mss==9.0.1
-pillow==10.2.0
+pillow==10.3.0
 PyMonCtl==0.7
 pynput==1.7.6
 pywin32==306
