@@ -14,15 +14,18 @@ class Settings(metaclass=SingletonMeta):
     SECTION_LOGGING: Final = 'LOGGING'
 
     # Keybind options
-    OPTION_KEY = 'KEY'
+    OPTION_KEY: Final = 'KEY'
 
     # Server options
-    OPTION_URL = 'URL'
-    OPTION_TOKEN = 'TOKEN'
+    OPTION_URL: Final = 'URL'
+    OPTION_TOKEN: Final = 'TOKEN'
 
     # Logging options
-    OPTION_LOG_LEVEL = 'log_level'
-    OPTION_LOGGERS = 'loggers'
+    OPTION_LOG_LEVEL: Final = 'log_level'
+    OPTION_LOGGERS: Final = 'loggers'
+
+    # Hardcoded values
+    DEFAULT_URL: Final = 'https://fs.veli.team'
 
     def __init__(self) -> None:
         self.__config_parser = None
@@ -31,8 +34,13 @@ class Settings(metaclass=SingletonMeta):
         self.__config_parser.read(self.__FILE_NAME)
 
         self.__check_section(section=Settings.SECTION_KEYBIND, options=[Settings.OPTION_KEY])
-        self.__check_section(section=Settings.SECTION_LOGGING, options=[Settings.OPTION_LOG_LEVEL, Settings.OPTION_LOGGERS])
         self.__check_section(section=Settings.SECTION_SERVER, options=[Settings.OPTION_URL, Settings.OPTION_TOKEN])
+
+        section = Settings.SECTION_SERVER
+        option = Settings.OPTION_URL
+        url = self.__config_parser.get(section=section, option=option)
+        if not url:
+            self.__config_parser.set(section=section, option=option, value=Settings.DEFAULT_URL)
 
         self.__init_logging()
 
@@ -96,13 +104,15 @@ class Settings(metaclass=SingletonMeta):
 
     def __init_logging(self):
         """Checks for needed options in logging section (optional)"""
-        log_level = 'INFO'
         section = self.SECTION_LOGGING
-        if self.__config_parser.has_section(section):
-            log_level = self.__config_parser.get(section, self.OPTION_LOG_LEVEL) or 'INFO'
+        if not self.__config_parser.has_section(section):
+            logging.basicConfig(level='INFO')
+            return
 
+        log_level = self.__config_parser.get(section=section, option=self.OPTION_LOG_LEVEL) or 'INFO'
+        loggers = self.__config_parser.get(section=section, option=self.OPTION_LOGGERS) or '{}'
         logging.basicConfig(level=log_level)
-        loggers = json.loads(self.__config_parser.get(section, self.OPTION_LOGGERS) or '{}')
+        loggers = json.loads(loggers)
         for logger, name_level in loggers.items():
             try:
                 log_level = logging._nameToLevel.get(name_level, logging.WARNING)

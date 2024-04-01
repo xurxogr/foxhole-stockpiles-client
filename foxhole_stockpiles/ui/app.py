@@ -25,7 +25,6 @@ class App(tb.Window):
 
         # text of the entries. It will be used for storing config options
         self.__key_text = tb.StringVar()
-        self.__url_text = tb.StringVar()
         self.__token_text = tb.StringVar()
         self.__capture_text = tb.StringVar()
 
@@ -37,11 +36,6 @@ class App(tb.Window):
         key_entry = tb.Entry(options_frame, name='keybind', textvariable=self.__key_text)
         key_entry.config(state="disabled")
         key_entry.grid(row=0, column=1, sticky=tb.E + tb.W)
-
-        # Server URL
-        tb.Label(options_frame, text="Server URL").grid(row=1, column=0)
-        self.__url_entry = tb.Entry(options_frame, name='url', textvariable=self.__url_text)
-        self.__url_entry.grid(row=1, column=1, sticky=tb.E + tb.W)
 
         # Server Token
         tb.Label(options_frame, text="Server Token").grid(row=2, column=0)
@@ -107,20 +101,18 @@ class App(tb.Window):
         """
         # Update values
         settings = Settings()
-        config_url = settings.get(Settings.SECTION_SERVER, Settings.OPTION_URL)
+        self.__url = settings.get(Settings.SECTION_SERVER, Settings.OPTION_URL)
         config_token = settings.get(Settings.SECTION_SERVER, Settings.OPTION_TOKEN)
         config_key = settings.get(Settings.SECTION_KEYBIND, Settings.OPTION_KEY)
 
         self.__set_hotkey(key=config_key)
         self.__token_text.set(config_token)
-        self.__url_text.set(config_url)
 
     def save_options(self):
         """
         Save the options to config.ini
         """
         settings = Settings()
-        settings.set(section=Settings.SECTION_SERVER, option=Settings.OPTION_URL, value=self.__url_text.get())
         settings.set(section=Settings.SECTION_SERVER, option=Settings.OPTION_TOKEN, value=self.__token_text.get())
         settings.set(section=Settings.SECTION_KEYBIND, option=Settings.OPTION_KEY, value=self.__key_text.get())
         settings.save()
@@ -156,16 +148,15 @@ class App(tb.Window):
         :param img: Image to send
         """
         timeout = Timeout(10.0, read=30.0)
-        base_url = self.__url_text.get()
         headers = {"API_KEY": self.__token_text.get()}
-        with Client(base_url=base_url, headers=headers, verify=False, timeout=timeout) as client:
+        with Client(base_url=self.__url, headers=headers, verify=False, timeout=timeout) as client:
             try:
                 response = client.post(
-                    url="/ocr/scan_image",
+                    url="/fs/ocr/scan_image",
                     files={'image': ('screenshot.png', img, 'image/png')}
                 )
-            except Exception:
-                print("Error sending the image.")
+            except Exception as ex:
+                print("Error sending the image. {}".format(str(ex)))
             else:
                 if response.status_code == 200:
                     print("Image sent")
