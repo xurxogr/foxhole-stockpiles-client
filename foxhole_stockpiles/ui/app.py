@@ -1,3 +1,4 @@
+from datetime import datetime
 from io import BytesIO
 import threading
 
@@ -7,7 +8,7 @@ from PIL import ImageGrab
 from pynput import keyboard
 import pywinctl
 import ttkbootstrap as tb
-from ttkbootstrap.toast import ToastNotification
+from ttkbootstrap.constants import *
 
 from foxhole_stockpiles.models.keypress import KeyPress
 from foxhole_stockpiles.config.settings import Settings
@@ -23,40 +24,56 @@ class App(tb.Window):
 
         super().__init__(themename=theme, title=title, minsize=(width, height), resizable=(False, False))
 
-        # text of the entries. It will be used for storing config options
         self.__key_text = tb.StringVar()
         self.__token_text = tb.StringVar()
-        self.__capture_text = tb.StringVar()
+        self.__capture_text = tb.StringVar(value="Enable capture")
+        self.__counter = 0
 
-        # Create UI
-        options_frame = tb.Frame(self)
-
-        # Key
-        tb.Label(options_frame, text="Screenshot key").grid(row=0, column=0)
-        key_entry = tb.Entry(options_frame, name='keybind', textvariable=self.__key_text)
-        key_entry.config(state="disabled")
-        key_entry.grid(row=0, column=1, sticky=tb.E + tb.W)
-
-        # Server Token
-        tb.Label(options_frame, text="Server Token").grid(row=2, column=0)
-        self.__token_entry = tb.Entry(options_frame, name='token', textvariable=self.__token_text, width=50)
-        self.__token_entry.grid(row=2, column=1, sticky=tb.E + tb.W)
-
-        buttons_frame = tb.Frame(self)
-        centered_frame = tb.Frame(self)
-
-        self.__capture_text.set("Enable capture")
-        tb.Button(centered_frame, textvariable=self.__capture_text, bootstyle = 'success', command=self.capture).grid(row=0, column=0, padx=10, sticky=tb.E + tb.W)
-        tb.Button(centered_frame, text='save options', command=self.save_options).grid(row=0, column=1, padx=10, sticky=tb.E + tb.W)
-        tb.Button(centered_frame, text='change keybind', command=self.change_key).grid(row=0, column=2, padx=10, sticky=tb.E + tb.W)
-
-        options_frame.pack(fill='both', expand=True)
-        buttons_frame.pack(fill='both', expand=True)
-        centered_frame.place(in_=buttons_frame, anchor="c", relx=.5)
+        self.create_widgets()
 
         # Fill the components with the values from config.ini
         self.__read_options()
         self.mainloop()
+
+
+    def create_widgets(self):
+        main_frame = tb.Frame(self, padding=10)
+        main_frame.pack(fill=BOTH, expand=YES)
+
+        # Screenshot Key
+        tb.Label(main_frame, text="Screenshot key:").grid(row=0, column=0, sticky=W, padx=(0, 5), pady=5)
+        tb.Entry(main_frame, textvariable=self.__key_text, state="disabled").grid(row=0, column=1, sticky=EW, pady=5)
+
+        # Server Token
+        tb.Label(main_frame, text="Server token:").grid(row=1, column=0, sticky=W, padx=(0, 5), pady=5)
+        tb.Entry(main_frame, textvariable=self.__token_text).grid(row=1, column=1, sticky=EW, pady=5)
+
+        # Buttons
+        button_frame = tb.Frame(main_frame)
+        button_frame.grid(row=2, column=0, columnspan=2, pady=10)
+
+        self.capture_button = tb.Button(button_frame, textvariable=self.__capture_text, command=self.capture, bootstyle="success")
+        self.capture_button.pack(side=LEFT, padx=5)
+
+        tb.Button(button_frame, text="Save options", command=self.save_options).pack(side=LEFT, padx=5)
+        tb.Button(button_frame, text="Change keybind", command=self.change_key).pack(side=LEFT, padx=5)
+
+        # Logs
+        tb.Label(main_frame, text="Logs").grid(row=3, column=0, columnspan=2, sticky=W, pady=(10, 5))
+
+        # Text Area with Scrollbar
+        text_frame = tb.Frame(main_frame)
+        text_frame.grid(row=4, column=0, columnspan=2, sticky=NSEW)
+        main_frame.rowconfigure(4, weight=1)
+        main_frame.columnconfigure(1, weight=1)
+
+        self.__text_area = tb.Text(text_frame, wrap=WORD, height=10)
+        self.__text_area.pack(side=LEFT, fill=BOTH, expand=YES)
+
+        scrollbar = tb.Scrollbar(text_frame, orient=VERTICAL, command=self.__text_area.yview)
+        scrollbar.pack(side=RIGHT, fill=Y)
+
+        self.__text_area.configure(yscrollcommand=scrollbar.set)
 
     def change_key(self):
         """
@@ -147,7 +164,9 @@ class App(tb.Window):
         Sends an image to foxhole_stockpiles server
         :param img: Image to send
         """
-
+        self.__counter += 1
+        current_screenshot = self.__counter
+        self.__print(message="[{}] Sending screenshot...".format(current_screenshot))
         byte_io = BytesIO()
         img.save(byte_io, 'png')
         byte_io.seek(0)
@@ -161,7 +180,7 @@ class App(tb.Window):
                     files={'image': ('screenshot.png', byte_io, 'image/png')}
                 )
             except Exception as ex:
-                self.__print(message="Error sending the image. {}".format(str(ex)), error=True)
+                self.__print(message="[{}] Error sending the image. {}".format(current_screenshot, str(ex)))
             else:
                 try:
                     text = response.json().get('message')
@@ -169,9 +188,9 @@ class App(tb.Window):
                     text = response.text
 
                 if response.status_code == 200:
-                    self.__print(message=text)
+                    self.__print(message="[{}] {}".format(current_screenshot, text))
                 else:
-                    self.__print(message="Error sending the image. Status_code: {}. Error: {}".format(response.status_code, text), error=True)
+                    self.__print(message="[{}] Error sending the image. Status_code: {}. Error: {}".format(current_screenshot, response.status_code, text))
 
     def __screenshot(self):
         """
@@ -180,27 +199,24 @@ class App(tb.Window):
         try:
             foxhole = pywinctl.getWindowsWithTitle(title="War", condition=pywinctl.Re.STARTSWITH)[0]
         except Exception:
-            self.__print(message="Foxhole is not running", error=True)
+            self.__print(message="Foxhole is not running")
             return None
 
         if foxhole.isMinimized:
-            self.__print(message="Foxhole is minimized", error=True)
+            self.__print(message="Foxhole is minimized")
             return None
 
         if not foxhole.isActive:
-            self.__print(message="Foxhole should be the active window", error=True)
+            self.__print(message="Foxhole should be the active window")
             return None
 
         region=foxhole.getClientFrame()
         return ImageGrab.grab(bbox=region, all_screens=True)
 
-    def __print(self, message: str, error: bool = False):
-        print(message)
-        toast = ToastNotification(
-            title="Foxhole Stockpiles",
-            message=message,
-            duration=5000,
-            alert=error
-        )
+    def __print(self, message: str):
+        self.__add_message(message)
 
-        toast.show_toast()
+    def __add_message(self, message: str):
+        current_time = datetime.now().strftime("%H:%M:%S")
+        self.__text_area.insert(END, "[{}] {}\n".format(current_time, message))
+        self.__text_area.see(END)
