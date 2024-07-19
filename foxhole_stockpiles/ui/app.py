@@ -7,6 +7,19 @@ from httpx import Timeout
 from PIL import ImageGrab
 from pynput import keyboard
 import pywinctl
+
+
+import locale
+import os
+
+# Try to set the locale to the user's default setting
+try:
+    locale.setlocale(locale.LC_ALL, '')
+except locale.Error:
+    # If that fails, force it to a common locale
+    os.environ['LC_ALL'] = 'C'
+    locale.setlocale(locale.LC_ALL, 'C')
+
 import ttkbootstrap as tb
 from ttkbootstrap.constants import *
 
