@@ -133,6 +133,7 @@ class App(tb.Window):
         settings.set(section=Settings.SECTION_SERVER, option=Settings.OPTION_TOKEN, value=self._token_text.get())
         settings.set(section=Settings.SECTION_KEYBIND, option=Settings.OPTION_KEY, value=self._key_text.get())
         settings.save()
+        self.message(message="Options saved")
 
     def capture(self):
         """
