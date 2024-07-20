@@ -26,8 +26,8 @@ class App(tb.Window):
 
         self.__key_text = tb.StringVar()
         self.__token_text = tb.StringVar()
-        self.__capture_text = tb.StringVar(value="Enable capture")
         self.__counter = 0
+        self.__capture_enabled = False
 
         self.create_widgets()
 
@@ -52,7 +52,7 @@ class App(tb.Window):
         button_frame = tb.Frame(main_frame)
         button_frame.grid(row=2, column=0, columnspan=2, pady=10)
 
-        self.capture_button = tb.Button(button_frame, textvariable=self.__capture_text, command=self.capture, bootstyle="success")
+        self.capture_button = tb.Button(button_frame, text="Start capture", command=self.capture, bootstyle=LIGHT)
         self.capture_button.pack(side=LEFT, padx=5)
 
         tb.Button(button_frame, text="Save options", command=self.save_options).pack(side=LEFT, padx=5)
@@ -138,18 +138,20 @@ class App(tb.Window):
         """
         "Enable capture" callback. Used to enable or disable the global keypress to take screenshots of Foxhole
         """
-        text = self.__capture_text.get()
-        if text == "Enable capture":
-            # Enable the capture if the hotkey is set
-            if self.__hotkey:
-                self.__capture_text.set('Capturing enabled')
-                self.__thread = keyboard.GlobalHotKeys({self.__hotkey: self.screenshot})
-                self.__thread.start()
-        else:
-            self.__capture_text.set('Enable capture')
+        if self.__capture_enabled:
+            self.capture_button.configure(text="Start Capture", bootstyle=LIGHT)
+            self.__print("Capture is disabled.")
             if self.__thread:
                 self.__thread.stop()
                 self.__thread = None
+        elif self.__hotkey: # Enable the capture if the hotkey is set
+            self.__print("Capture is now enabled.")
+            self.capture_button.configure(text="Stop Capture", bootstyle=DANGER)
+            self.__thread = keyboard.GlobalHotKeys({self.__hotkey: self.screenshot})
+            self.__thread.start()
+
+
+        self.__capture_enabled = not self.__capture_enabled
 
     def screenshot(self):
         img = self.__screenshot()
