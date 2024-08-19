@@ -1,17 +1,23 @@
-# pip install httpx pywinctl pynput ttkbootstrap
-anyio==4.3.0
-certifi==2024.2.2
+# pip install httpx pywinctl pynput ttkbootstrap pydantic pydantic_settings
+# pip install pyinstaller (To build it)
+annotated-types==0.7.0
+anyio==4.4.0
+certifi==2024.7.4
 h11==0.14.0
 httpcore==1.0.5
 httpx==0.27.0
-idna==3.6
-pillow==10.3.0
-PyMonCtl==0.7
-pynput==1.7.6
+idna==3.7
+pillow==10.4.0
+pydantic==2.8.2
+pydantic-settings==2.4.0
+pydantic_core==2.20.1
+PyMonCtl==0.92
+pynput==1.7.7
+python-dotenv==1.0.1
 pywin32==306
-PyWinBox==0.6
-PyWinCtl==0.3
+PyWinBox==0.7
+PyWinCtl==0.4
 six==1.16.0
 sniffio==1.3.1
 ttkbootstrap==1.10.1
-typing_extensions==4.10.0
+typing_extensions==4.12.2

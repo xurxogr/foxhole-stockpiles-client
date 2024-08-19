@@ -2,16 +2,15 @@ from datetime import datetime
 from io import BytesIO
 import threading
 
-from httpx import Client
-from httpx import Timeout
+from httpx import Client, Timeout
 from PIL import ImageGrab
 from pynput import keyboard
 import pywinctl
 import ttkbootstrap as tb
 from ttkbootstrap.constants import *
 
+from foxhole_stockpiles.core.config import settings
 from foxhole_stockpiles.models.keypress import KeyPress
-from foxhole_stockpiles.config.settings import Settings
 
 
 class App(tb.Window):
@@ -117,21 +116,16 @@ class App(tb.Window):
         Read the config.ini file options and update the appropriate UI fields
         """
         # Update values
-        settings = Settings()
-        self.__url = settings.get(Settings.SECTION_SERVER, Settings.OPTION_URL)
-        config_token = settings.get(Settings.SECTION_SERVER, Settings.OPTION_TOKEN)
-        config_key = settings.get(Settings.SECTION_KEYBIND, Settings.OPTION_KEY)
-
-        self.set_hotkey(key=config_key)
-        self._token_text.set(config_token)
+        self.__url = settings.server.url
+        self.set_hotkey(key=settings.keybind.key)
+        self._token_text.set(settings.server.token)
 
     def save_options(self):
         """
         Save the options to config.ini
         """
-        settings = Settings()
-        settings.set(section=Settings.SECTION_SERVER, option=Settings.OPTION_TOKEN, value=self._token_text.get())
-        settings.set(section=Settings.SECTION_KEYBIND, option=Settings.OPTION_KEY, value=self._key_text.get())
+        settings.server.token = self._token_text.get()
+        settings.keybind.key = self._key_text.get()
         settings.save()
         self.message(message="Options saved")
 
@@ -150,7 +144,6 @@ class App(tb.Window):
             self.capture_button.configure(text="Stop Capture", bootstyle=DANGER)
             self._thread = keyboard.GlobalHotKeys({self._hotkey: self.screenshot})
             self._thread.start()
-
 
         self._capture_enabled = not self._capture_enabled
 
@@ -174,7 +167,7 @@ class App(tb.Window):
         img.save(byte_io, 'png')
         byte_io.seek(0)
 
-        timeout = Timeout(10.0, read=30.0)
+        timeout = Timeout(10.0, read=60.0)
         headers = {"API_KEY": self._token_text.get()}
         with Client(headers=headers, verify=False, timeout=timeout) as client:
             try:

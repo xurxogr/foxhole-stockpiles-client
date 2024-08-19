@@ -18,6 +18,9 @@ class KeyPress():
         """
         callback for release of keys.
         If it's the last release, return the combination of key(s)
+
+        Args:
+            key: Key released
         """
         if key in self.__pressed_keys:
             self.__pressed_keys.remove(key)
@@ -42,6 +45,9 @@ class KeyPress():
         a+<ctrl> => a
         a+s      => a
         f4       => <f4>
+
+        Args:
+            key: Key pressed
         """
         if key == Key.esc:
             self.__clean_vars()
@@ -80,7 +86,9 @@ class KeyPress():
     def read_key(self) -> str:
         """
         Reads a new key combination.
-        :returns str: List of keys pressed.
+        
+        Returns:
+            str: The key combination read
         """
         self.__clean_vars()
         self.__listener = Listener(on_press=self.__on_press, on_release=self.__on_release)
@@ -112,9 +120,13 @@ class KeyPress():
         <ctrl>+<f3> => <ctrl>+<114>
         <pause> => <19>
 
-        :param keys: str = List of keys. i.e. <ctrl>+<f3>
-        :returns str = List of keys adapted for GlobalHotKey. i.e. <ctrl>+<114>
+        Args:
+            keys: str = List of keys. i.e. <ctrl>+<f3>
+        
+        Returns:
+            str: List of keys adapted for GlobalHotKey. i.e. <ctrl>+<114>
         """
+
         def _transform(key: str) -> str:
             if 'numpad_' not in key:
                 return key
