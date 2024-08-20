@@ -1,11 +1,10 @@
 import configparser
 from functools import lru_cache
 import json
-import os
 import types
 from typing import get_args, get_origin
 
-from pydantic import Field, ConfigDict, model_validator
+from pydantic import Field, ConfigDict
 from pydantic_settings import BaseSettings
 
 from foxhole_stockpiles.core.env_interpolation import EnvInterpolation
@@ -33,9 +32,11 @@ def write_ini_file(file_path: str, data: dict[str, dict[str, str]]):
         file_path (str): The path to the INI file
         data (dict[str, dict[str, str]]): The data to write
     """
-    config = configparser.ConfigParser(interpolation=EnvInterpolation())
+    config = configparser.ConfigParser()
     for section, section_data in data.items():
-        config[section.upper()] = section_data
+        if section_data:
+            values = {key: value for key, value in section_data.items() if value}
+            config[section.upper()] = values
 
     with open(file_path, "w") as file:
         config.write(file)
@@ -81,12 +82,6 @@ class SectionSettings(BaseSettings):
         return cls(**converted_data)
 
 ###### Sections of the INI
-class LoggingSettings(SectionSettings):
-    loggers: dict | None = Field(description="Loggers and their levels", default=None)
-    level: str | None = Field(description="Logging level", default="INFO")
-    format: str | None = Field(description="Logging format", default="[%(asctime)s] %(levelname)s [%(name)s] %(message)s")
-    date_format: str | None = Field(description="Logging date format", default="%Y-%m-%d %H:%M:%S")
-
 class KeybindSettings(SectionSettings):
     key: str | None = Field(description="Key to take a screenshot", default=None)
 
@@ -97,7 +92,6 @@ class ServerSettings(SectionSettings):
 # Sections. End
 
 class AppSettings(BaseSettings):
-    logging: LoggingSettings | None = None
     keybind: KeybindSettings | None = None
     server: ServerSettings | None = None
 
@@ -108,7 +102,7 @@ class AppSettings(BaseSettings):
 
         Args:
             file_name (str): The path to the INI file
-        
+
         Returns:
             AppSettings: The settings
         """
@@ -120,8 +114,14 @@ class AppSettings(BaseSettings):
                 section_data = ini_data[attr_name]
                 settings_data[attr_name] = section_class.from_dict(section_data)
 
-        return cls(**settings_data)
-    
+        # Initialize the settings with default values
+        object = cls(**settings_data)
+        for attr_name, attr_type in cls.__annotations__.items():
+            if not getattr(object, attr_name):
+                setattr(object, attr_name, attr_type.__args__[0]())
+
+        return object
+
     def save(self, file_name: str = 'config.ini'):
         """
         Save the settings to the INI file.
@@ -129,8 +129,7 @@ class AppSettings(BaseSettings):
         Args:
             file_name (str): The path to the INI file
         """
-        settings_dict = self.model_dump()
-        write_ini_file(file_path=file_name, data=settings_dict)
+        write_ini_file(file_path=file_name, data=self.model_dump())
 
 
 @lru_cache()

@@ -1,7 +1,4 @@
-from pynput.keyboard import Listener
-from pynput.keyboard import HotKey
-from pynput.keyboard import Key
-from pynput.keyboard import KeyCode
+from pynput.keyboard import HotKey, Key, KeyCode, Listener
 
 
 class KeyPress():
@@ -86,7 +83,7 @@ class KeyPress():
     def read_key(self) -> str:
         """
         Reads a new key combination.
-        
+
         Returns:
             str: The key combination read
         """
@@ -122,7 +119,7 @@ class KeyPress():
 
         Args:
             keys: str = List of keys. i.e. <ctrl>+<f3>
-        
+
         Returns:
             str: List of keys adapted for GlobalHotKey. i.e. <ctrl>+<114>
         """
@@ -140,6 +137,9 @@ class KeyPress():
 
             return "<{}>".format(int(_key) + 96)
 
+
+        if not keys:
+            return None
 
         hotkey_list = []
         for key in keys.split('+'):
