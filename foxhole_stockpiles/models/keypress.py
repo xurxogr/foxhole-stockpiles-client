@@ -1,7 +1,7 @@
 from pynput.keyboard import HotKey, Key, KeyCode, Listener
 
 
-class KeyPress():
+class KeyPress:
     def __init__(self):
         self.__listener = None
         self.__clean_vars()
@@ -12,9 +12,8 @@ class KeyPress():
         self.__pressed_keys = set()
 
     def __on_release(self, key):
-        """
-        callback for release of keys.
-        If it's the last release, return the combination of key(s)
+        """Callback for release of keys.
+        If it's the last release, return the combination of key(s).
 
         Args:
             key: Key released
@@ -25,9 +24,8 @@ class KeyPress():
                 return False
 
     def __on_press(self, key):
-        """
-        callback for pressing keys
-        Keeps track of number of keys pressed removing duplicates
+        """Callback for pressing keys
+        Keeps track of number of keys pressed removing duplicates.
 
         It outputs the key in string format.
         Conversions:
@@ -59,20 +57,20 @@ class KeyPress():
             return
 
         canonical_key = self.__listener.canonical(key=key)
-        if type(key) == Key:
+        if isinstance(key, Key):
             # ctrl, shift, alt, cmd
-            if type(canonical_key) == Key:
-                name = "<{}>".format(canonical_key.name)
+            if isinstance(canonical_key, Key):
+                name = f"<{canonical_key.name}>"
                 if name in self.__modifiers:
                     return
 
                 self.__modifiers.append(name)
             # Pause, left, scroll, tab, space, etc
             else:
-                self.__key = "<{}>".format(key.name)
+                self.__key = f"<{key.name}>"
         else:
-            if 96 <= key.vk and key.vk <= 105: # Numpad
-                self.__key = "numpad_{}".format(key.vk - 96)
+            if 96 <= key.vk and key.vk <= 105:  # Numpad
+                self.__key = f"numpad_{key.vk - 96}"
             elif key.vk == 107:
                 self.__key = "numpad_plus"
             elif key.vk == 109:
@@ -81,8 +79,7 @@ class KeyPress():
                 self.__key = str(canonical_key).replace("'", "")
 
     def read_key(self) -> str:
-        """
-        Reads a new key combination.
+        """Reads a new key combination.
 
         Returns:
             str: The key combination read
@@ -102,9 +99,8 @@ class KeyPress():
         return "+".join(key_list)
 
     def prepare_for_global_hotkey(self, keys: str = None) -> str:
-        """
-        Transforms the key read to a format valid for GlobalHotKey
-        GlobalHotkey seems not to like keys like <f3> but works with the vk equivalent
+        """Transforms the key read to a format valid for GlobalHotKey
+        GlobalHotkey seems not to like keys like <f3> but works with the vk equivalent.
 
         Replaces all modified values from _on_press to their vk equivalent
         numpad_[0-9] => <96>...<105>
@@ -125,35 +121,34 @@ class KeyPress():
         """
 
         def _transform(key: str) -> str:
-            if 'numpad_' not in key:
+            if "numpad_" not in key:
                 return key
 
-            _key = key.replace('numpad_', '')
-            if _key == 'plus':
-                return '<107>'
+            _key = key.replace("numpad_", "")
+            if _key == "plus":
+                return "<107>"
 
-            if _key == '-':
-                return '<109>'
+            if _key == "-":
+                return "<109>"
 
-            return "<{}>".format(int(_key) + 96)
-
+            return f"<{int(_key) + 96}>"
 
         if not keys:
             return None
 
         hotkey_list = []
-        for key in keys.split('+'):
+        for key in keys.split("+"):
             hotkey_list.append(_transform(key))
 
         try:
             parsed_keys = HotKey.parse("+".join(hotkey_list))
-        except Exception as ex:
-            raise ValueError("Error parsing [{}]".format(keys)) from None
+        except Exception:
+            raise ValueError(f"Error parsing [{keys}]") from None
 
         modified_keys = []
         for index, key in enumerate(parsed_keys):
             # Change special keys (Non modifiers) to their vk equivalent
-            if type(key) != KeyCode and key.name not in {'shift', 'ctrl', 'alt', 'cmd'}:
+            if not isinstance(key, KeyCode) and key.name not in {"shift", "ctrl", "alt", "cmd"}:
                 modified_keys.append(str(key.value))
             else:
                 modified_keys.append(hotkey_list[index])

@@ -1,17 +1,15 @@
-from configparser import ExtendedInterpolation
 import os
 import re
+from configparser import ExtendedInterpolation
 
 
 class EnvInterpolation(ExtendedInterpolation):
-
     def _expandvars(self, value: str) -> str:
-        """
-            Expand shell variables of form ${var}. Unknown variables are left unchanged
+        """Expand shell variables of form ${var}. Unknown variables are left unchanged
             unless they came in the form ${var@defaultvalue} then defaultvalue is used.
         :param value: str = Value to expand.
         """
-        pattern = re.compile(r'\$\{([^@\}]*)[@]?([^}]*)\}', re.ASCII)
+        pattern = re.compile(r"\$\{([^@\}]*)[@]?([^}]*)\}", re.ASCII)
         i = 0
         while True:
             m = pattern.search(value, i)

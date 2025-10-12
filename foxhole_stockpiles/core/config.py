@@ -1,17 +1,21 @@
+"""Configuration management for the Foxhole Stockpiles Client."""
+
 import configparser
 import json
 import types
 from functools import lru_cache
-from typing import get_args, get_origin
+from typing import Any, get_args, get_origin
 
-from pydantic import ConfigDict, Field
-from pydantic_settings import BaseSettings
+from pydantic import Field
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from foxhole_stockpiles.core.env_interpolation import EnvInterpolation
 
 
 def read_ini_file(file_path: str) -> dict[str, dict[str, str]]:
-    """Read an INI file and return it as dictionary where the keys are sections and the values are dictionaries of key-value pairs.
+    """Read an INI file and return it as dictionary.
+
+    Keys are sections and values are dictionaries of key-value pairs.
 
     Args:
         file_path (str): The path to the INI file
@@ -24,7 +28,7 @@ def read_ini_file(file_path: str) -> dict[str, dict[str, str]]:
     return {section.lower(): dict(config[section]) for section in config.sections()}
 
 
-def write_ini_file(file_path: str, data: dict[str, dict[str, str]]):
+def write_ini_file(file_path: str, data: dict[str, dict[str, str]]) -> None:
     """Write a dictionary to an INI file.
 
     Args:
@@ -42,10 +46,12 @@ def write_ini_file(file_path: str, data: dict[str, dict[str, str]]):
 
 
 class SectionSettings(BaseSettings):
-    model_config = ConfigDict(extra="ignore")
+    """Base class for INI file section settings."""
+
+    model_config = SettingsConfigDict(extra="ignore")
 
     @classmethod
-    def from_dict(cls, data: dict):
+    def from_dict(cls, data: dict[str, Any]) -> "SectionSettings":
         """Convert a dictionary to a class instance.
 
         Args:
@@ -72,7 +78,7 @@ class SectionSettings(BaseSettings):
                 # primitive types
                 elif attr_type in [str, int, float]:
                     converted_data[attr_name] = attr_type(data[attr_name])
-                elif attr_type == bool:
+                elif attr_type is bool:
                     converted_data[attr_name] = data[attr_name].lower() in ["true", "yes", "1"]
                 # anything else
                 else:
@@ -85,18 +91,25 @@ class SectionSettings(BaseSettings):
 
 ###### Sections of the INI
 class KeybindSettings(SectionSettings):
+    """Settings for keyboard keybinds."""
+
     key: str | None = Field(description="Key to take a screenshot", default=None)
 
 
 class ServerSettings(SectionSettings):
+    """Settings for server connection."""
+
     token: str | None = Field(description="API token", default=None)
-    url: str = Field(description="API URL", default="https://backend.com/fs/ocr/scan_image")
+    url: str = Field(
+        description="API URL", default="https://backend.com/fs/ocr/scan_image"
+    )
 
 
 # Sections. End
 
 
 class AppSettings(BaseSettings):
+    """Main application settings."""
     keybind: KeybindSettings | None = None
     server: ServerSettings | None = None
 
@@ -136,7 +149,12 @@ class AppSettings(BaseSettings):
 
 
 @lru_cache
-def get_settings():
+def get_settings() -> AppSettings:
+    """Get or create the application settings singleton.
+
+    Returns:
+        AppSettings: The application settings instance.
+    """
     return AppSettings().from_ini()
 
 

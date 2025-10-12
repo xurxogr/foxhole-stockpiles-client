@@ -1,15 +1,22 @@
 import threading
 
 import ttkbootstrap as tb
-from ttkbootstrap.constants import *
+from ttkbootstrap.constants import BOTH, LEFT, PRIMARY, RIGHT, SECONDARY, X, YES
 
 from foxhole_stockpiles.models.keypress import KeyPress
 
 
 class ModalWindow(tb.Toplevel):
-    def __init__(self, parent, title: str, label: str, initial_value: str, default_value: str, is_keybind: bool):
-        """
-        Create a modal window
+    def __init__(
+        self,
+        parent,
+        title: str,
+        label: str,
+        initial_value: str,
+        default_value: str,
+        is_keybind: bool,
+    ):
+        """Create a modal window.
 
         Args:
             parent: Parent window
@@ -32,9 +39,7 @@ class ModalWindow(tb.Toplevel):
         self.create_widgets()
 
     def create_widgets(self):
-        """
-        Create the widgets for the window
-        """
+        """Create the widgets for the window."""
         main_frame = tb.Frame(self, padding=10)
         main_frame.pack(fill=BOTH, expand=YES)
 
@@ -49,23 +54,26 @@ class ModalWindow(tb.Toplevel):
         button_frame.pack(fill=BOTH, expand=YES)
 
         if self.is_keybind:
-            tb.Button(button_frame, text="Change keybind", command=self.change_key).pack(side=LEFT, padx=5)
+            tb.Button(button_frame, text="Change keybind", command=self.change_key).pack(
+                side=LEFT, padx=5
+            )
 
-        tb.Button(button_frame, text="Cancel", command=self.on_cancel, bootstyle=SECONDARY).pack(side=RIGHT, padx=5)
-        tb.Button(button_frame, text="Accept", command=self.on_accept, bootstyle=PRIMARY).pack(side=RIGHT, padx=5)
+        tb.Button(button_frame, text="Cancel", command=self.on_cancel, bootstyle=SECONDARY).pack(
+            side=RIGHT, padx=5
+        )
+        tb.Button(button_frame, text="Accept", command=self.on_accept, bootstyle=PRIMARY).pack(
+            side=RIGHT, padx=5
+        )
 
     def change_key(self):
-        """
-        "Change keybind" callback.
+        """ "Change keybind" callback.
         Opens a new thread to capture a new keybind.
         """
         self.value_text.set("Waiting for a new key...")
         threading.Thread(target=self.read_key).start()
 
     def read_key(self):
-        """
-        Waits for a new combinations of key pressed and stores it in the appropriate entry
-        """
+        """Waits for a new combinations of key pressed and stores it in the appropriate entry."""
         k = KeyPress()
         key = k.read_key()
 
@@ -75,9 +83,8 @@ class ModalWindow(tb.Toplevel):
         self.set_hotkey(key=key)
 
     def set_hotkey(self, key: str):
-        """
-        Updates the UI with the defined keybind.
-        If there is keybind or it's invalid to be used as global hotkey a message will be displayes
+        """Updates the UI with the defined keybind.
+        If there is keybind or it's invalid to be used as global hotkey a message will be displayes.
         """
         if not key:
             self.result = None
@@ -92,7 +99,7 @@ class ModalWindow(tb.Toplevel):
             self.result = key
         except ValueError:
             self.result = None
-            self.value_text.set('invalid key detected: {}'.format(key))
+            self.value_text.set(f"invalid key detected: {key}")
 
     def on_cancel(self):
         self.result = None
