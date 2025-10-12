@@ -1,17 +1,26 @@
+from typing import Any
+
 from pynput.keyboard import HotKey, Key, KeyCode, Listener
 
 
 class KeyPress:
-    def __init__(self):
-        self.__listener = None
+    """Handles keyboard input capture and conversion for global hotkeys."""
+
+    def __init__(self) -> None:
+        """Initialize the KeyPress handler."""
+        self.__listener: Listener | None = None
+        self.__key: str | None = None
+        self.__modifiers: list[str] = []
+        self.__pressed_keys: set[Any] = set()
         self.__clean_vars()
 
-    def __clean_vars(self):
+    def __clean_vars(self) -> None:
+        """Reset internal state variables."""
         self.__key = None
         self.__modifiers = []
         self.__pressed_keys = set()
 
-    def __on_release(self, key):
+    def __on_release(self, key: Any) -> bool | None:
         """Callback for release of keys.
         If it's the last release, return the combination of key(s).
 
@@ -22,8 +31,9 @@ class KeyPress:
             self.__pressed_keys.remove(key)
             if len(self.__pressed_keys) == 0:
                 return False
+        return None
 
-    def __on_press(self, key):
+    def __on_press(self, key: Any) -> bool | None:
         """Callback for pressing keys
         Keeps track of number of keys pressed removing duplicates.
 
@@ -54,15 +64,17 @@ class KeyPress:
         # If there is already a non modifier, ignore any other key press
         # ctrl+a is valid but a+ctrl is not. same for a+s
         if self.__key is not None:
-            return
+            return None
 
+        if self.__listener is None:
+            return None
         canonical_key = self.__listener.canonical(key=key)
         if isinstance(key, Key):
             # ctrl, shift, alt, cmd
             if isinstance(canonical_key, Key):
                 name = f"<{canonical_key.name}>"
                 if name in self.__modifiers:
-                    return
+                    return None
 
                 self.__modifiers.append(name)
             # Pause, left, scroll, tab, space, etc
@@ -77,6 +89,7 @@ class KeyPress:
                 self.__key = "numpad_-"
             else:
                 self.__key = str(canonical_key).replace("'", "")
+        return None
 
     def read_key(self) -> str:
         """Reads a new key combination.
@@ -85,7 +98,9 @@ class KeyPress:
             str: The key combination read
         """
         self.__clean_vars()
-        self.__listener = Listener(on_press=self.__on_press, on_release=self.__on_release)
+        self.__listener = Listener(
+            on_press=self.__on_press, on_release=self.__on_release
+        )
         with self.__listener:
             self.__listener.join()
 
@@ -98,7 +113,7 @@ class KeyPress:
 
         return "+".join(key_list)
 
-    def prepare_for_global_hotkey(self, keys: str = None) -> str:
+    def prepare_for_global_hotkey(self, keys: str | None = None) -> str | None:
         """Transforms the key read to a format valid for GlobalHotKey
         GlobalHotkey seems not to like keys like <f3> but works with the vk equivalent.
 
@@ -148,7 +163,12 @@ class KeyPress:
         modified_keys = []
         for index, key in enumerate(parsed_keys):
             # Change special keys (Non modifiers) to their vk equivalent
-            if not isinstance(key, KeyCode) and key.name not in {"shift", "ctrl", "alt", "cmd"}:
+            if not isinstance(key, KeyCode) and key.name not in {
+                "shift",
+                "ctrl",
+                "alt",
+                "cmd",
+            }:
                 modified_keys.append(str(key.value))
             else:
                 modified_keys.append(hotkey_list[index])

@@ -1,9 +1,14 @@
+"""Environment variable interpolation for ConfigParser."""
+
 import os
 import re
 from configparser import ExtendedInterpolation
+from typing import Any
 
 
 class EnvInterpolation(ExtendedInterpolation):
+    """Custom interpolation class that supports environment variables."""
+
     def _expandvars(self, value: str) -> str:
         """Expand shell variables of form ${var}. Unknown variables are left unchanged
             unless they came in the form ${var@defaultvalue} then defaultvalue is used.
@@ -31,6 +36,7 @@ class EnvInterpolation(ExtendedInterpolation):
 
         return value
 
-    def before_read(self, parser, section, option, value):
+    def before_read(self, parser: Any, section: Any, option: Any, value: str) -> str:
+        """Override before_read to apply environment variable expansion."""
         value = super().before_read(parser, section, option, value)
         return self._expandvars(value)

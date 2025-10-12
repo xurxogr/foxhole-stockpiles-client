@@ -1,7 +1,10 @@
+"""Main application window for the Foxhole Stockpiles Client."""
+
 import re
 import threading
 from datetime import datetime
 from io import BytesIO
+from typing import Any
 
 import pywinctl
 import ttkbootstrap as tb
@@ -30,8 +33,12 @@ from foxhole_stockpiles.models.keypress import KeyPress
 from foxhole_stockpiles.ui.modal_window import ModalWindow
 
 
-class App(tb.Window):
-    def __init__(self, title: str, width: int = 400, height: int = 600, theme: str = "darkly"):
+class App(tb.Window):  # type: ignore[misc]
+    """Main application window."""
+
+    def __init__(
+        self, title: str, width: int = 400, height: int = 600, theme: str = "darkly"
+    ):
         if width is None or width < 0:
             raise ValueError("Width must be a valid positive integer")
 
@@ -39,7 +46,10 @@ class App(tb.Window):
             raise ValueError("Height must be a valid positive integer")
 
         super().__init__(
-            themename=theme, title=title, minsize=(width, height), resizable=(False, False)
+            themename=theme,
+            title=title,
+            minsize=(width, height),
+            resizable=(False, False),
         )
 
         self._counter = 0
@@ -51,9 +61,11 @@ class App(tb.Window):
         replacement = r"\1/profile"
 
         # Apply the regex substitution
+        assert settings.server is not None
         self._token_url = re.sub(pattern, replacement, settings.server.url)
 
         # Transform the keybind into a hotkey
+        assert settings.keybind is not None
         if not settings.keybind.key:
             self._hotkey = None
         else:
@@ -67,16 +79,20 @@ class App(tb.Window):
 
         # Change the status of the capture button if options are not set
         if not settings.keybind.key:
-            self.message(message="Keybind is not set. Capture is disabled until a keybind is set.")
+            self.message(
+                message="Keybind is not set. Capture is disabled until a keybind is set."
+            )
             self.capture_button.configure(state=DISABLED)
 
         if not settings.server.token:
-            self.message(message="Token is not set. Capture is disabled until a token is set.")
+            self.message(
+                message="Token is not set. Capture is disabled until a token is set."
+            )
             self.capture_button.configure(state=DISABLED)
 
         self.mainloop()
 
-    def create_widgets(self):
+    def create_widgets(self) -> None:
         """Create the widgets for the window."""
         # Menu
         menubar = tb.Menu(self)
@@ -95,7 +111,10 @@ class App(tb.Window):
         buttons_frame.pack(fill=X, expand=NO)
         # Buttons
         self.capture_button = tb.Button(
-            buttons_frame, text="Start capture", command=self.command_capture, bootstyle=LIGHT
+            buttons_frame,
+            text="Start capture",
+            command=self.command_capture,
+            bootstyle=LIGHT,
         )
         self.capture_button.pack(side=LEFT, padx=5)
 
@@ -108,16 +127,19 @@ class App(tb.Window):
         self._text_area = tb.Text(text_frame, wrap=WORD, height=10)
         self._text_area.pack(side=LEFT, fill=BOTH, expand=YES, pady=10)
 
-        scrollbar = tb.Scrollbar(text_frame, orient=VERTICAL, command=self._text_area.yview)
+        scrollbar = tb.Scrollbar(
+            text_frame, orient=VERTICAL, command=self._text_area.yview
+        )
         scrollbar.pack(side=RIGHT, fill=Y)
 
         self._text_area.configure(yscrollcommand=scrollbar.set)
 
     # Menu Commands
-    def command_keybind(self):
+    def command_keybind(self) -> None:
         """'Set Keybind' callback. Used to set the keybind to take screenshots of Foxhole
         Creates a new ModalWindow to set the keybind. If the keybind is modified, it will update the settings and save them.
         """
+        assert settings.keybind is not None
         keybind_window = ModalWindow(
             parent=self,
             title="Keybind Selection",
@@ -142,13 +164,15 @@ class App(tb.Window):
         settings.keybind.key = result
         self.message(message=f"Keybind updated to {result}.")
         settings.save()
+        assert settings.server is not None
         state = NORMAL if settings.keybind.key and settings.server.token else DISABLED
         self.capture_button.configure(state=state)
 
-    def command_token(self):
+    def command_token(self) -> None:
         """'Set Token' callback. Used to set the token to send the screenshots to the server
         Creates a new ModalWindow to set the token. If the token is modified, it will update the settings and save them.
         """
+        assert settings.server is not None
         token_window = ModalWindow(
             parent=self,
             title="Token Selection",
@@ -169,12 +193,15 @@ class App(tb.Window):
         if result:
             self.message(message="Token updated.")
         else:
-            self.message(message="Token removed. Capture is disabled until a token is set.")
+            self.message(
+                message="Token removed. Capture is disabled until a token is set."
+            )
         settings.save()
+        assert settings.keybind is not None
         state = NORMAL if settings.keybind.key and settings.server.token else DISABLED
         self.capture_button.configure(state=state)
 
-    def command_capture(self):
+    def command_capture(self) -> None:
         """ "Enable capture" callback. Used to enable or disable the global keypress to take screenshots of Foxhole."""
         if self._capture_enabled:
             self.capture_button.configure(text="Start Capture", bootstyle=LIGHT)
@@ -185,12 +212,14 @@ class App(tb.Window):
         else:
             self.message("Capture is now enabled.")
             self.capture_button.configure(text="Stop Capture", bootstyle=DANGER)
-            self._thread = keyboard.GlobalHotKeys({self._hotkey: self.command_screenshot})
+            self._thread = keyboard.GlobalHotKeys(
+                {self._hotkey: self.command_screenshot}
+            )
             self._thread.start()
 
         self._capture_enabled = not self._capture_enabled
 
-    def command_screenshot(self):
+    def command_screenshot(self) -> None:
         """'Take Screenshot' callback. Used to take a screenshot of Foxhole and send it to the server."""
         img = self.take_screenshot()
         if not img:
@@ -199,12 +228,14 @@ class App(tb.Window):
         # Open a new thread to avoid blocking the execution
         threading.Thread(target=self.send_image, args=(img,)).start()
 
-    def send_image(self, img):
+    def send_image(self, img: Any) -> None:
         """Sends an image to foxhole_stockpiles server.
 
         Args:
             img: Image to send
         """
+        assert settings.server is not None
+        assert settings.server.token is not None
         self._counter += 1
         current_screenshot = self._counter
         self.message(message=f"[{current_screenshot}] Sending screenshot...")
@@ -221,7 +252,9 @@ class App(tb.Window):
                     files={"image": ("screenshot.png", byte_io, "image/png")},
                 )
             except Exception as ex:
-                self.message(message=f"[{current_screenshot}] Error sending the image. {ex}")
+                self.message(
+                    message=f"[{current_screenshot}] Error sending the image. {ex}"
+                )
             else:
                 try:
                     text = response.json().get("message")
@@ -235,10 +268,12 @@ class App(tb.Window):
                         message=f"[{current_screenshot}] Error sending the image. Status_code: {response.status_code}. Error: {text}"
                     )
 
-    def take_screenshot(self):
+    def take_screenshot(self) -> Any:
         """Take an screeshot of Foxhole."""
         try:
-            foxhole = pywinctl.getWindowsWithTitle(title="War", condition=pywinctl.Re.STARTSWITH)[0]
+            foxhole = pywinctl.getWindowsWithTitle(
+                title="War", condition=pywinctl.Re.STARTSWITH
+            )[0]
         except Exception:
             self.message(message="Foxhole is not running")
             return None
@@ -254,7 +289,7 @@ class App(tb.Window):
         region = foxhole.getClientFrame()
         return ImageGrab.grab(bbox=region, all_screens=True)
 
-    def message(self, message: str):
+    def message(self, message: str) -> None:
         """Add a message to the text area.
 
         Args:

@@ -4,7 +4,7 @@ import configparser
 import json
 import types
 from functools import lru_cache
-from typing import Any, get_args, get_origin
+from typing import Any, Self, get_args, get_origin
 
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -51,7 +51,7 @@ class SectionSettings(BaseSettings):
     model_config = SettingsConfigDict(extra="ignore")
 
     @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> "SectionSettings":
+    def from_dict(cls, data: dict[str, Any]) -> Self:
         """Convert a dictionary to a class instance.
 
         Args:
@@ -65,7 +65,9 @@ class SectionSettings(BaseSettings):
             origin = get_origin(attr_type)
             if isinstance(attr_type, types.UnionType):
                 args = get_args(attr_type)
-                attr_type = next((arg for arg in args if arg is not type(None)), args[0])
+                attr_type = next(
+                    (arg for arg in args if arg is not type(None)), args[0]
+                )
             elif origin:
                 attr_type = origin
 
@@ -79,7 +81,11 @@ class SectionSettings(BaseSettings):
                 elif attr_type in [str, int, float]:
                     converted_data[attr_name] = attr_type(data[attr_name])
                 elif attr_type is bool:
-                    converted_data[attr_name] = data[attr_name].lower() in ["true", "yes", "1"]
+                    converted_data[attr_name] = data[attr_name].lower() in [
+                        "true",
+                        "yes",
+                        "1",
+                    ]
                 # anything else
                 else:
                     converted_data[attr_name] = data[attr_name]
@@ -110,11 +116,12 @@ class ServerSettings(SectionSettings):
 
 class AppSettings(BaseSettings):
     """Main application settings."""
+
     keybind: KeybindSettings | None = None
     server: ServerSettings | None = None
 
     @classmethod
-    def from_ini(cls, file_name: str = "config.ini"):
+    def from_ini(cls, file_name: str = "config.ini") -> Self:
         """Read the settings from an INI file. Relative path from the project root.
 
         Args:
@@ -139,7 +146,7 @@ class AppSettings(BaseSettings):
 
         return object
 
-    def save(self, file_name: str = "config.ini"):
+    def save(self, file_name: str = "config.ini") -> None:
         """Save the settings to the INI file.
 
         Args:

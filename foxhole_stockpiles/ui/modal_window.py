@@ -1,4 +1,7 @@
+"""Modal window component for user input."""
+
 import threading
+from typing import Any
 
 import ttkbootstrap as tb
 from ttkbootstrap.constants import BOTH, LEFT, PRIMARY, RIGHT, SECONDARY, X, YES
@@ -6,16 +9,18 @@ from ttkbootstrap.constants import BOTH, LEFT, PRIMARY, RIGHT, SECONDARY, X, YES
 from foxhole_stockpiles.models.keypress import KeyPress
 
 
-class ModalWindow(tb.Toplevel):
+class ModalWindow(tb.Toplevel):  # type: ignore[misc]
+    """Modal dialog window for capturing user input."""
+
     def __init__(
         self,
-        parent,
+        parent: Any,
         title: str,
         label: str,
-        initial_value: str,
+        initial_value: str | None,
         default_value: str,
         is_keybind: bool,
-    ):
+    ) -> None:
         """Create a modal window.
 
         Args:
@@ -30,7 +35,7 @@ class ModalWindow(tb.Toplevel):
         self.title(title)
         self.grab_set()  # Make the window modal
         self.is_keybind = is_keybind
-        self.result = None
+        self.result: str | None = None
 
         self.label_text = label
         self.value_text = tb.StringVar(value=initial_value or default_value)
@@ -38,7 +43,7 @@ class ModalWindow(tb.Toplevel):
 
         self.create_widgets()
 
-    def create_widgets(self):
+    def create_widgets(self) -> None:
         """Create the widgets for the window."""
         main_frame = tb.Frame(self, padding=10)
         main_frame.pack(fill=BOTH, expand=YES)
@@ -47,32 +52,34 @@ class ModalWindow(tb.Toplevel):
         label_frame.pack(fill=X, expand=YES)
         # Screenshot Key
         state = "readonly" if self.is_keybind else "normal"
-        tb.Entry(label_frame, textvariable=self.value_text, state=state).pack(fill=X, expand=YES)
+        tb.Entry(label_frame, textvariable=self.value_text, state=state).pack(
+            fill=X, expand=YES
+        )
 
         # Buttons
         button_frame = tb.Frame(main_frame)
         button_frame.pack(fill=BOTH, expand=YES)
 
         if self.is_keybind:
-            tb.Button(button_frame, text="Change keybind", command=self.change_key).pack(
-                side=LEFT, padx=5
-            )
+            tb.Button(
+                button_frame, text="Change keybind", command=self.change_key
+            ).pack(side=LEFT, padx=5)
 
-        tb.Button(button_frame, text="Cancel", command=self.on_cancel, bootstyle=SECONDARY).pack(
-            side=RIGHT, padx=5
-        )
-        tb.Button(button_frame, text="Accept", command=self.on_accept, bootstyle=PRIMARY).pack(
-            side=RIGHT, padx=5
-        )
+        tb.Button(
+            button_frame, text="Cancel", command=self.on_cancel, bootstyle=SECONDARY
+        ).pack(side=RIGHT, padx=5)
+        tb.Button(
+            button_frame, text="Accept", command=self.on_accept, bootstyle=PRIMARY
+        ).pack(side=RIGHT, padx=5)
 
-    def change_key(self):
+    def change_key(self) -> None:
         """ "Change keybind" callback.
         Opens a new thread to capture a new keybind.
         """
         self.value_text.set("Waiting for a new key...")
         threading.Thread(target=self.read_key).start()
 
-    def read_key(self):
+    def read_key(self) -> None:
         """Waits for a new combinations of key pressed and stores it in the appropriate entry."""
         k = KeyPress()
         key = k.read_key()
@@ -82,13 +89,15 @@ class ModalWindow(tb.Toplevel):
 
         self.set_hotkey(key=key)
 
-    def set_hotkey(self, key: str):
+    def set_hotkey(self, key: str) -> None:
         """Updates the UI with the defined keybind.
         If there is keybind or it's invalid to be used as global hotkey a message will be displayes.
         """
         if not key:
             self.result = None
-            self.value_text.set("No key defined. Click 'Change keybind' to define a key")
+            self.value_text.set(
+                "No key defined. Click 'Change keybind' to define a key"
+            )
             return
 
         try:
@@ -101,16 +110,19 @@ class ModalWindow(tb.Toplevel):
             self.result = None
             self.value_text.set(f"invalid key detected: {key}")
 
-    def on_cancel(self):
+    def on_cancel(self) -> None:
+        """Handle cancel button click."""
         self.result = None
         self.destroy()
 
-    def on_accept(self):
+    def on_accept(self) -> None:
+        """Handle accept button click."""
         self.result = self.value_text.get()
         if self.result == self.default_value:
             self.result = None
         self.destroy()
 
-    def show(self):
+    def show(self) -> str | None:
+        """Show the modal window and return the result."""
         self.wait_window()
         return self.result
