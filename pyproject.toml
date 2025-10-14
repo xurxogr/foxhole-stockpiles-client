@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "foxhole-stockpiles-client"
-version = "0.1.0"
+version = "1.0.0"
 description = "Desktop client for capturing and sending Foxhole stockpile screenshots to the processing server"
 readme = "README.md"
 license = {text = "MIT"}

@@ -1,3 +1,5 @@
+"""Keyboard input capture and conversion for global hotkeys."""
+
 from typing import Any
 
 from pynput.keyboard import HotKey, Key, KeyCode, Listener
@@ -22,6 +24,7 @@ class KeyPress:
 
     def __on_release(self, key: Any) -> bool | None:
         """Callback for release of keys.
+
         If it's the last release, return the combination of key(s).
 
         Args:
@@ -34,7 +37,8 @@ class KeyPress:
         return None
 
     def __on_press(self, key: Any) -> bool | None:
-        """Callback for pressing keys
+        """Callback for pressing keys.
+
         Keeps track of number of keys pressed removing duplicates.
 
         It outputs the key in string format.
@@ -45,7 +49,8 @@ class KeyPress:
         - numpad +: numpad_plus
         - numpad -: numpad_-
 
-        It allows multiple modifiers and a single non-modifier. Ignores all other keypress after the first non-modifier
+        It allows multiple modifiers and a single non-modifier. Ignores all other
+        keypress after the first non-modifier:
         <ctrl>+a => <ctrl>+a
         a+<ctrl> => a
         a+s      => a
@@ -98,9 +103,7 @@ class KeyPress:
             str: The key combination read
         """
         self.__clean_vars()
-        self.__listener = Listener(
-            on_press=self.__on_press, on_release=self.__on_release
-        )
+        self.__listener = Listener(on_press=self.__on_press, on_release=self.__on_release)
         with self.__listener:
             self.__listener.join()
 
@@ -114,7 +117,8 @@ class KeyPress:
         return "+".join(key_list)
 
     def prepare_for_global_hotkey(self, keys: str | None = None) -> str | None:
-        """Transforms the key read to a format valid for GlobalHotKey
+        """Transforms the key read to a format valid for GlobalHotKey.
+
         GlobalHotkey seems not to like keys like <f3> but works with the vk equivalent.
 
         Replaces all modified values from _on_press to their vk equivalent

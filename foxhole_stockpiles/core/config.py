@@ -65,9 +65,7 @@ class SectionSettings(BaseSettings):
             origin = get_origin(attr_type)
             if isinstance(attr_type, types.UnionType):
                 args = get_args(attr_type)
-                attr_type = next(
-                    (arg for arg in args if arg is not type(None)), args[0]
-                )
+                attr_type = next((arg for arg in args if arg is not type(None)), args[0])
             elif origin:
                 attr_type = origin
 
@@ -105,10 +103,20 @@ class KeybindSettings(SectionSettings):
 class ServerSettings(SectionSettings):
     """Settings for server connection."""
 
-    token: str | None = Field(description="API token", default=None)
-    url: str = Field(
-        description="API URL", default="https://backend.com/fs/ocr/scan_image"
+    url: str = Field(description="API URL", default="https://backend.com/fs/ocr/scan_image")
+    auth_type: str | None = Field(
+        description="Authentication type (None, basic, bearer)", default="bearer"
     )
+    username: str | None = Field(description="Username for basic auth", default=None)
+    password: str | None = Field(description="Password for basic auth", default=None)
+    token: str | None = Field(description="Token for bearer auth", default=None)
+
+
+class WebhookSettings(SectionSettings):
+    """Settings for webhook forward auth."""
+
+    token: str | None = Field(description="Webhook forward auth token", default=None)
+    header: str = Field(description="Header name for webhook token", default="API_KEY")
 
 
 # Sections. End
@@ -119,6 +127,7 @@ class AppSettings(BaseSettings):
 
     keybind: KeybindSettings | None = None
     server: ServerSettings | None = None
+    webhook: WebhookSettings | None = None
 
     @classmethod
     def from_ini(cls, file_name: str = "config.ini") -> Self:

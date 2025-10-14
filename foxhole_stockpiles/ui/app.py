@@ -23,14 +23,14 @@ from ttkbootstrap.constants import (
     RIGHT,
     VERTICAL,
     WORD,
+    YES,
     X,
     Y,
-    YES,
 )
 
 from foxhole_stockpiles.core.config import settings
 from foxhole_stockpiles.models.keypress import KeyPress
-from foxhole_stockpiles.ui.modal_window import ModalWindow
+from foxhole_stockpiles.ui.settings_window import SettingsWindow
 
 
 class App(tb.Window):  # type: ignore[misc]
@@ -38,11 +38,19 @@ class App(tb.Window):  # type: ignore[misc]
 
     def __init__(
         self, title: str, width: int = 400, height: int = 600, theme: str = "darkly"
-    ):
-        if width is None or width < 0:
+    ) -> None:
+        """Initialize the main application window.
+
+        Args:
+            title: Window title
+            width: Window width in pixels
+            height: Window height in pixels
+            theme: ttkbootstrap theme name
+        """
+        if width < 0:
             raise ValueError("Width must be a valid positive integer")
 
-        if height is None or height < 0:
+        if height < 0:
             raise ValueError("Height must be a valid positive integer")
 
         super().__init__(
@@ -66,6 +74,7 @@ class App(tb.Window):  # type: ignore[misc]
 
         # Transform the keybind into a hotkey
         assert settings.keybind is not None
+        assert settings.webhook is not None
         if not settings.keybind.key:
             self._hotkey = None
         else:
@@ -79,14 +88,12 @@ class App(tb.Window):  # type: ignore[misc]
 
         # Change the status of the capture button if options are not set
         if not settings.keybind.key:
-            self.message(
-                message="Keybind is not set. Capture is disabled until a keybind is set."
-            )
+            self.message(message="Keybind is not set. Capture is disabled until a keybind is set.")
             self.capture_button.configure(state=DISABLED)
 
-        if not settings.server.token:
+        if not self._check_auth_configured():
             self.message(
-                message="Token is not set. Capture is disabled until a token is set."
+                message="Authentication is not configured. Capture is disabled until auth is set."
             )
             self.capture_button.configure(state=DISABLED)
 
@@ -100,8 +107,7 @@ class App(tb.Window):  # type: ignore[misc]
 
         settings_menu = tb.Menu(menubar, tearoff=0)
         menubar.add_cascade(label="Settings", menu=settings_menu)
-        settings_menu.add_command(label="Set Keybind", command=self.command_keybind)
-        settings_menu.add_command(label="Set Token", command=self.command_token)
+        settings_menu.add_command(label="Configure", command=self.command_settings)
 
         # Main Frame
         main_frame = tb.Frame(self, padding=10)
@@ -127,82 +133,40 @@ class App(tb.Window):  # type: ignore[misc]
         self._text_area = tb.Text(text_frame, wrap=WORD, height=10)
         self._text_area.pack(side=LEFT, fill=BOTH, expand=YES, pady=10)
 
-        scrollbar = tb.Scrollbar(
-            text_frame, orient=VERTICAL, command=self._text_area.yview
-        )
+        scrollbar = tb.Scrollbar(text_frame, orient=VERTICAL, command=self._text_area.yview)
         scrollbar.pack(side=RIGHT, fill=Y)
 
         self._text_area.configure(yscrollcommand=scrollbar.set)
 
     # Menu Commands
-    def command_keybind(self) -> None:
-        """'Set Keybind' callback. Used to set the keybind to take screenshots of Foxhole
-        Creates a new ModalWindow to set the keybind. If the keybind is modified, it will update the settings and save them.
-        """
-        assert settings.keybind is not None
-        keybind_window = ModalWindow(
-            parent=self,
-            title="Keybind Selection",
-            label="Keybind selected",
-            initial_value=settings.keybind.key,
-            default_value="No key defined. Click 'Change keybind' to define a key",
-            is_keybind=True,
-        )
-        result = keybind_window.show()
-        if result is None:
-            return
+    def command_settings(self) -> None:
+        """'Settings' callback. Opens the settings configuration window."""
+        settings_window = SettingsWindow(parent=self)
+        saved = settings_window.show()
 
-        try:
-            k = KeyPress()
-            self._hotkey = k.prepare_for_global_hotkey(result)
-        except ValueError:
-            self._hotkey = None
+        if saved:
+            self.message(message="Settings saved successfully.")
 
-        if result == settings.keybind.key:
-            return
+            # Update hotkey if keybind changed
+            assert settings.keybind is not None
+            if settings.keybind.key:
+                try:
+                    k = KeyPress()
+                    self._hotkey = k.prepare_for_global_hotkey(settings.keybind.key)
+                except ValueError:
+                    self._hotkey = None
+            else:
+                self._hotkey = None
 
-        settings.keybind.key = result
-        self.message(message=f"Keybind updated to {result}.")
-        settings.save()
-        assert settings.server is not None
-        state = NORMAL if settings.keybind.key and settings.server.token else DISABLED
-        self.capture_button.configure(state=state)
-
-    def command_token(self) -> None:
-        """'Set Token' callback. Used to set the token to send the screenshots to the server
-        Creates a new ModalWindow to set the token. If the token is modified, it will update the settings and save them.
-        """
-        assert settings.server is not None
-        token_window = ModalWindow(
-            parent=self,
-            title="Token Selection",
-            label="Token",
-            initial_value=settings.server.token,
-            default_value=f"No token defined. visit {self._token_url} and copy the token here",
-            is_keybind=False,
-        )
-
-        result = token_window.show()
-        if result is None:
-            return
-
-        if result == settings.server.token:
-            return
-
-        settings.server.token = result
-        if result:
-            self.message(message="Token updated.")
-        else:
-            self.message(
-                message="Token removed. Capture is disabled until a token is set."
-            )
-        settings.save()
-        assert settings.keybind is not None
-        state = NORMAL if settings.keybind.key and settings.server.token else DISABLED
-        self.capture_button.configure(state=state)
+            # Update capture button state
+            state = NORMAL if settings.keybind.key and self._check_auth_configured() else DISABLED
+            self.capture_button.configure(state=state)
 
     def command_capture(self) -> None:
-        """ "Enable capture" callback. Used to enable or disable the global keypress to take screenshots of Foxhole."""
+        """Enable capture callback.
+
+        Used to enable or disable the global keypress to take screenshots of Foxhole.
+        """
         if self._capture_enabled:
             self.capture_button.configure(text="Start Capture", bootstyle=LIGHT)
             self.message("Capture is disabled.")
@@ -212,15 +176,16 @@ class App(tb.Window):  # type: ignore[misc]
         else:
             self.message("Capture is now enabled.")
             self.capture_button.configure(text="Stop Capture", bootstyle=DANGER)
-            self._thread = keyboard.GlobalHotKeys(
-                {self._hotkey: self.command_screenshot}
-            )
+            self._thread = keyboard.GlobalHotKeys({self._hotkey: self.command_screenshot})
             self._thread.start()
 
         self._capture_enabled = not self._capture_enabled
 
     def command_screenshot(self) -> None:
-        """'Take Screenshot' callback. Used to take a screenshot of Foxhole and send it to the server."""
+        """Take Screenshot callback.
+
+        Used to take a screenshot of Foxhole and send it to the server.
+        """
         img = self.take_screenshot()
         if not img:
             return
@@ -235,7 +200,6 @@ class App(tb.Window):  # type: ignore[misc]
             img: Image to send
         """
         assert settings.server is not None
-        assert settings.server.token is not None
         self._counter += 1
         current_screenshot = self._counter
         self.message(message=f"[{current_screenshot}] Sending screenshot...")
@@ -243,18 +207,36 @@ class App(tb.Window):  # type: ignore[misc]
         img.save(byte_io, "png")
         byte_io.seek(0)
 
+        # Prepare authentication headers based on auth type
+        auth_type = settings.server.auth_type
+        headers: dict[str, str] = {}
+        auth = None
+
+        if auth_type is not None:
+            if auth_type.lower() == "bearer":
+                assert settings.server.token is not None
+                headers["Authorization"] = f"Bearer {settings.server.token}"
+            elif auth_type.lower() == "basic":
+                assert settings.server.username is not None
+                assert settings.server.password is not None
+                # Use httpx's built-in auth parameter for basic auth
+                auth = (settings.server.username, settings.server.password)
+        # For None auth_type, no additional auth needed
+
+        # Add webhook forward auth header if configured
+        assert settings.webhook is not None
+        if settings.webhook.token:
+            headers[settings.webhook.header] = settings.webhook.token
+
         timeout = Timeout(10.0, read=60.0)
-        headers = {"API_KEY": settings.server.token}
-        with Client(headers=headers, verify=False, timeout=timeout) as client:
+        with Client(auth=auth, headers=headers, verify=False, timeout=timeout) as client:
             try:
                 response = client.post(
                     url=settings.server.url,
                     files={"image": ("screenshot.png", byte_io, "image/png")},
                 )
             except Exception as ex:
-                self.message(
-                    message=f"[{current_screenshot}] Error sending the image. {ex}"
-                )
+                self.message(message=f"[{current_screenshot}] Error sending the image. {ex}")
             else:
                 try:
                     text = response.json().get("message")
@@ -264,16 +246,16 @@ class App(tb.Window):  # type: ignore[misc]
                 if response.status_code == 200:
                     self.message(message=f"[{current_screenshot}] {text}")
                 else:
-                    self.message(
-                        message=f"[{current_screenshot}] Error sending the image. Status_code: {response.status_code}. Error: {text}"
+                    error_msg = (
+                        f"[{current_screenshot}] Error sending the image. "
+                        f"Status_code: {response.status_code}. Error: {text}"
                     )
+                    self.message(message=error_msg)
 
     def take_screenshot(self) -> Any:
         """Take an screeshot of Foxhole."""
         try:
-            foxhole = pywinctl.getWindowsWithTitle(
-                title="War", condition=pywinctl.Re.STARTSWITH
-            )[0]
+            foxhole = pywinctl.getWindowsWithTitle(title="War", condition=pywinctl.Re.STARTSWITH)[0]
         except Exception:
             self.message(message="Foxhole is not running")
             return None
@@ -298,3 +280,20 @@ class App(tb.Window):  # type: ignore[misc]
         current_time = datetime.now().strftime("%H:%M:%S")
         self._text_area.insert(END, f"[{current_time}] {message}\n")
         self._text_area.see(END)
+
+    def _check_auth_configured(self) -> bool:
+        """Check if authentication is properly configured based on auth type.
+
+        Returns:
+            bool: True if auth is configured, False otherwise
+        """
+        assert settings.server is not None
+        auth_type = settings.server.auth_type
+
+        if auth_type is None:
+            return True
+        elif auth_type.lower() == "basic":
+            return bool(settings.server.username and settings.server.password)
+        elif auth_type.lower() == "bearer":
+            return bool(settings.server.token)
+        return False

@@ -10,9 +10,13 @@ class EnvInterpolation(ExtendedInterpolation):
     """Custom interpolation class that supports environment variables."""
 
     def _expandvars(self, value: str) -> str:
-        """Expand shell variables of form ${var}. Unknown variables are left unchanged
-            unless they came in the form ${var@defaultvalue} then defaultvalue is used.
-        :param value: str = Value to expand.
+        """Expand shell variables of form ${var}.
+
+        Unknown variables are left unchanged unless they came in the form
+        ${var@defaultvalue} then defaultvalue is used.
+
+        Args:
+            value: Value to expand
         """
         pattern = re.compile(r"\$\{([^@\}]*)[@]?([^}]*)\}", re.ASCII)
         i = 0
