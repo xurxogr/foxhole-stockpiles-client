@@ -29,6 +29,7 @@ from ttkbootstrap.constants import (
 )
 
 from foxhole_stockpiles.core.config import settings
+from foxhole_stockpiles.enums.auth_type import AuthType
 from foxhole_stockpiles.models.keypress import KeyPress
 from foxhole_stockpiles.ui.settings_window import SettingsWindow
 
@@ -69,12 +70,9 @@ class App(tb.Window):  # type: ignore[misc]
         replacement = r"\1/profile"
 
         # Apply the regex substitution
-        assert settings.server is not None
         self._token_url = re.sub(pattern, replacement, settings.server.url)
 
         # Transform the keybind into a hotkey
-        assert settings.keybind is not None
-        assert settings.webhook is not None
         if not settings.keybind.key:
             self._hotkey = None
         else:
@@ -148,7 +146,6 @@ class App(tb.Window):  # type: ignore[misc]
             self.message(message="Settings saved successfully.")
 
             # Update hotkey if keybind changed
-            assert settings.keybind is not None
             if settings.keybind.key:
                 try:
                     k = KeyPress()
@@ -199,7 +196,6 @@ class App(tb.Window):  # type: ignore[misc]
         Args:
             img: Image to send
         """
-        assert settings.server is not None
         self._counter += 1
         current_screenshot = self._counter
         self.message(message=f"[{current_screenshot}] Sending screenshot...")
@@ -210,23 +206,26 @@ class App(tb.Window):  # type: ignore[misc]
         # Prepare authentication headers based on auth type
         auth_type = settings.server.auth_type
         headers: dict[str, str] = {}
-        auth = None
+        auth: tuple[str, str] | None = None
 
-        if auth_type is not None:
-            if auth_type.lower() == "bearer":
-                assert settings.server.token is not None
-                headers["Authorization"] = f"Bearer {settings.server.token}"
-            elif auth_type.lower() == "basic":
-                assert settings.server.username is not None
-                assert settings.server.password is not None
-                # Use httpx's built-in auth parameter for basic auth
-                auth = (settings.server.username, settings.server.password)
+        if auth_type == AuthType.BEARER:
+            # Pydantic validation ensures token is not None for BEARER auth
+            token = settings.server.token
+            if token:  # Type guard for mypy
+                headers["Authorization"] = f"Bearer {token}"
+        elif auth_type == AuthType.BASIC:
+            # Pydantic validation ensures username and password are not None for BASIC auth
+            username = settings.server.username
+            password = settings.server.password
+            if username and password:  # Type guard for mypy
+                auth = (username, password)
         # For None auth_type, no additional auth needed
 
         # Add webhook forward auth header if configured
-        assert settings.webhook is not None
-        if settings.webhook.token:
-            headers[settings.webhook.header] = settings.webhook.token
+        webhook_token = settings.webhook.token
+        webhook_header = settings.webhook.header
+        if webhook_token and webhook_header:  # Pydantic validation ensures both are set
+            headers[webhook_header] = webhook_token
 
         timeout = Timeout(10.0, read=60.0)
         with Client(auth=auth, headers=headers, verify=False, timeout=timeout) as client:
@@ -287,13 +286,12 @@ class App(tb.Window):  # type: ignore[misc]
         Returns:
             bool: True if auth is configured, False otherwise
         """
-        assert settings.server is not None
         auth_type = settings.server.auth_type
 
         if auth_type is None:
             return True
-        elif auth_type.lower() == "basic":
+        elif auth_type == AuthType.BASIC:
             return bool(settings.server.username and settings.server.password)
-        elif auth_type.lower() == "bearer":
+        elif auth_type == AuthType.BEARER:
             return bool(settings.server.token)
         return False

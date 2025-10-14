@@ -1,167 +1,128 @@
 """Configuration management for the Foxhole Stockpiles Client."""
 
-import configparser
 import json
-import types
 from functools import lru_cache
-from typing import Any, Self, get_args, get_origin
+from pathlib import Path
+from typing import Self
 
-from pydantic import Field
+from pydantic import BaseModel, Field, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-from foxhole_stockpiles.core.env_interpolation import EnvInterpolation
+from foxhole_stockpiles.enums.auth_type import AuthType
 
 
-def read_ini_file(file_path: str) -> dict[str, dict[str, str]]:
-    """Read an INI file and return it as dictionary.
-
-    Keys are sections and values are dictionaries of key-value pairs.
-
-    Args:
-        file_path (str): The path to the INI file
-
-    Returns:
-        dict[str, dict[str, str]]: The INI file as a dictionary
-    """
-    config = configparser.ConfigParser(interpolation=EnvInterpolation())
-    config.read(file_path)
-    return {section.lower(): dict(config[section]) for section in config.sections()}
-
-
-def write_ini_file(file_path: str, data: dict[str, dict[str, str]]) -> None:
-    """Write a dictionary to an INI file.
-
-    Args:
-        file_path (str): The path to the INI file
-        data (dict[str, dict[str, str]]): The data to write
-    """
-    config = configparser.ConfigParser()
-    for section, section_data in data.items():
-        if section_data:
-            values = {key: value for key, value in section_data.items() if value}
-            config[section.upper()] = values
-
-    with open(file_path, "w") as file:
-        config.write(file)
-
-
-class SectionSettings(BaseSettings):
-    """Base class for INI file section settings."""
-
-    model_config = SettingsConfigDict(extra="ignore")
-
-    @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> Self:
-        """Convert a dictionary to a class instance.
-
-        Args:
-            data (dict): The dictionary to convert
-        """
-        converted_data = {}
-        for attr_name, attr_type in cls.__annotations__.items():
-            if attr_name not in data:
-                continue
-
-            origin = get_origin(attr_type)
-            if isinstance(attr_type, types.UnionType):
-                args = get_args(attr_type)
-                attr_type = next((arg for arg in args if arg is not type(None)), args[0])
-            elif origin:
-                attr_type = origin
-
-            try:
-                # list or dict
-                if attr_type in [dict, list]:
-                    converted_data[attr_name] = (
-                        json.loads(data[attr_name]) if data[attr_name] else None
-                    )
-                # primitive types
-                elif attr_type in [str, int, float]:
-                    converted_data[attr_name] = attr_type(data[attr_name])
-                elif attr_type is bool:
-                    converted_data[attr_name] = data[attr_name].lower() in [
-                        "true",
-                        "yes",
-                        "1",
-                    ]
-                # anything else
-                else:
-                    converted_data[attr_name] = data[attr_name]
-            except ValueError:
-                converted_data[attr_name] = data[attr_name]
-
-        return cls(**converted_data)
-
-
-###### Sections of the INI
-class KeybindSettings(SectionSettings):
+class KeybindSettings(BaseModel):
     """Settings for keyboard keybinds."""
 
     key: str | None = Field(description="Key to take a screenshot", default=None)
 
 
-class ServerSettings(SectionSettings):
+class ServerSettings(BaseModel):
     """Settings for server connection."""
 
     url: str = Field(description="API URL", default="https://backend.com/fs/ocr/scan_image")
-    auth_type: str | None = Field(
-        description="Authentication type (None, basic, bearer)", default="bearer"
+    auth_type: AuthType | None = Field(
+        description="Authentication type (None, BASIC, BEARER)", default=None
     )
     username: str | None = Field(description="Username for basic auth", default=None)
     password: str | None = Field(description="Password for basic auth", default=None)
     token: str | None = Field(description="Token for bearer auth", default=None)
 
+    @model_validator(mode="after")
+    def validate_auth_configuration(self) -> Self:
+        """Validate that authentication fields match the auth_type.
 
-class WebhookSettings(SectionSettings):
+        Returns:
+            The validated model instance
+
+        Raises:
+            ValueError: If authentication configuration is invalid
+        """
+        if self.auth_type == AuthType.BASIC:
+            if not self.username or not self.password:
+                raise ValueError("Username and password are required when auth_type is BASIC")
+            if self.token is not None:
+                raise ValueError("Token must be None when auth_type is BASIC")
+        elif self.auth_type == AuthType.BEARER:
+            if not self.token:
+                raise ValueError("Token is required when auth_type is BEARER")
+            if self.username is not None or self.password is not None:
+                raise ValueError("Username and password must be None when auth_type is BEARER")
+        elif self.auth_type is None:
+            if self.username is not None or self.password is not None or self.token is not None:
+                raise ValueError(
+                    "Username, password, and token must be None when auth_type is None"
+                )
+
+        return self
+
+
+class WebhookSettings(BaseModel):
     """Settings for webhook forward auth."""
 
     token: str | None = Field(description="Webhook forward auth token", default=None)
-    header: str = Field(description="Header name for webhook token", default="API_KEY")
+    header: str | None = Field(description="Header name for webhook token", default=None)
 
+    @model_validator(mode="after")
+    def validate_webhook_configuration(self) -> Self:
+        """Validate that webhook token and header are both set or both None.
 
-# Sections. End
+        Returns:
+            The validated model instance
+
+        Raises:
+            ValueError: If webhook configuration is invalid
+        """
+        if self.token and not self.header:
+            raise ValueError("Header name is required when webhook token is set")
+        if self.header and not self.token:
+            raise ValueError("Webhook token is required when header name is set")
+
+        return self
 
 
 class AppSettings(BaseSettings):
     """Main application settings."""
 
-    keybind: KeybindSettings | None = None
-    server: ServerSettings | None = None
-    webhook: WebhookSettings | None = None
+    model_config = SettingsConfigDict(extra="ignore")
+
+    keybind: KeybindSettings = Field(default_factory=KeybindSettings)
+    server: ServerSettings = Field(default_factory=ServerSettings)
+    webhook: WebhookSettings = Field(default_factory=WebhookSettings)
 
     @classmethod
-    def from_ini(cls, file_name: str = "config.ini") -> Self:
-        """Read the settings from an INI file. Relative path from the project root.
+    def from_json(cls, file_path: str = "config.json") -> Self:
+        """Read the settings from a JSON file.
 
         Args:
-            file_name (str): The path to the INI file
+            file_path: The path to the JSON file
 
         Returns:
-            AppSettings: The settings
+            AppSettings: The settings instance
         """
-        ini_data = read_ini_file(file_name)
-        settings_data = {}
-        for attr_name, attr_type in cls.__annotations__.items():
-            if attr_name in ini_data:
-                section_class = attr_type.__args__[0]  # Get the type from Optional
-                section_data = ini_data[attr_name]
-                settings_data[attr_name] = section_class.from_dict(section_data)
+        config_file = Path(file_path)
+        if not config_file.exists():
+            # Return default settings if file doesn't exist
+            return cls()
 
-        # Initialize the settings with default values
-        object = cls(**settings_data)
-        for attr_name, attr_type in cls.__annotations__.items():
-            if not getattr(object, attr_name):
-                setattr(object, attr_name, attr_type.__args__[0]())
+        with open(config_file) as f:
+            data = json.load(f)
 
-        return object
+        return cls(**data)
 
-    def save(self, file_name: str = "config.ini") -> None:
-        """Save the settings to the INI file.
+    def save(self, file_path: str = "config.json") -> None:
+        """Save the settings to a JSON file.
 
         Args:
-            file_name (str): The path to the INI file
+            file_path: The path to the JSON file
         """
-        write_ini_file(file_path=file_name, data=self.model_dump())
+        config_file = Path(file_path)
+
+        # Create a dictionary with only the values we want to save
+        data = self.model_dump(mode="json")
+
+        with open(config_file, "w") as f:
+            json.dump(data, f, indent=2)
 
 
 @lru_cache
@@ -171,7 +132,7 @@ def get_settings() -> AppSettings:
     Returns:
         AppSettings: The application settings instance.
     """
-    return AppSettings().from_ini()
+    return AppSettings.from_json()
 
 
 settings = get_settings()

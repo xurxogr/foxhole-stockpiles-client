@@ -7,6 +7,7 @@ import ttkbootstrap as tb
 from ttkbootstrap.constants import BOTH, BOTTOM, LEFT, PRIMARY, RIGHT, SECONDARY, YES, X
 
 from foxhole_stockpiles.core.config import settings
+from foxhole_stockpiles.enums.auth_type import AuthType
 from foxhole_stockpiles.models.keypress import KeyPress
 
 
@@ -104,8 +105,6 @@ class SettingsWindow(tb.Toplevel):  # type: ignore[misc]
         Args:
             parent: Parent frame
         """
-        assert settings.keybind is not None
-
         tb.Label(parent, text="Screenshot Keybind", font=("", 12, "bold")).pack(
             anchor="w", pady=(0, 10)
         )
@@ -137,8 +136,6 @@ class SettingsWindow(tb.Toplevel):  # type: ignore[misc]
         Args:
             parent: Parent frame
         """
-        assert settings.server is not None
-
         tb.Label(parent, text="Server Configuration", font=("", 12, "bold")).pack(
             anchor="w", pady=(0, 10)
         )
@@ -163,12 +160,12 @@ class SettingsWindow(tb.Toplevel):  # type: ignore[misc]
         auth_frame.pack(fill=X, pady=5)
         tb.Label(auth_frame, text="Auth Type:", width=15).pack(side=LEFT)
         self.auth_type_var = tb.StringVar(
-            value=settings.server.auth_type if settings.server.auth_type else "none"
+            value=settings.server.auth_type.value if settings.server.auth_type else "none"
         )
         auth_combo = tb.Combobox(
             auth_frame,
             textvariable=self.auth_type_var,
-            values=["none", "basic", "bearer"],
+            values=["none", AuthType.BASIC.value, AuthType.BEARER.value],
             state="readonly",
         )
         auth_combo.pack(side=LEFT, fill=X, expand=YES)
@@ -219,8 +216,6 @@ class SettingsWindow(tb.Toplevel):  # type: ignore[misc]
         Args:
             parent: Parent frame
         """
-        assert settings.webhook is not None
-
         tb.Label(parent, text="Webhook Forward Auth", font=("", 12, "bold")).pack(
             anchor="w", pady=(0, 10)
         )
@@ -246,7 +241,9 @@ class SettingsWindow(tb.Toplevel):  # type: ignore[misc]
         header_frame = tb.Frame(parent)
         header_frame.pack(fill=X, pady=5)
         tb.Label(header_frame, text="Header Name:", width=15).pack(side=LEFT)
-        self.webhook_header_var = tb.StringVar(value=settings.webhook.header)
+        self.webhook_header_var = tb.StringVar(
+            value=settings.webhook.header if settings.webhook.header else ""
+        )
         tb.Entry(header_frame, textvariable=self.webhook_header_var).pack(
             side=LEFT, fill=X, expand=YES
         )
@@ -259,10 +256,10 @@ class SettingsWindow(tb.Toplevel):  # type: ignore[misc]
         """
         auth_type = self.auth_type_var.get()
 
-        if auth_type == "basic":
+        if auth_type == AuthType.BASIC.value:
             self.basic_auth_frame.pack(fill=X, pady=(10, 0))
             self.bearer_frame.pack_forget()
-        elif auth_type == "bearer":
+        elif auth_type == AuthType.BEARER.value:
             self.basic_auth_frame.pack_forget()
             self.bearer_frame.pack(fill=X, pady=(10, 0))
         else:  # none
@@ -296,28 +293,48 @@ class SettingsWindow(tb.Toplevel):  # type: ignore[misc]
         Returns:
             bool: True if all settings are valid, False otherwise
         """
-        # Validate webhook header
+        # Validate webhook configuration
+        webhook_token = self.webhook_token_var.get()
         webhook_header = self.webhook_header_var.get()
-        if webhook_header.lower() in self.dangerous_headers:
+
+        if webhook_token and not webhook_header:
             tb.dialogs.Messagebox.show_error(
-                f"Cannot use '{webhook_header}' header. This is a protected HTTP header.",
-                "Invalid Header",
+                "Header name is required when webhook token is set.",
+                "Missing Webhook Header",
                 parent=self,
             )
             return False
 
-        if not all(c.isalnum() or c in "-_" for c in webhook_header):
+        if webhook_header and not webhook_token:
             tb.dialogs.Messagebox.show_error(
-                f"Invalid header name '{webhook_header}'. "
-                "Use only letters, numbers, hyphens, and underscores.",
-                "Invalid Header",
+                "Webhook token is required when header name is set.",
+                "Missing Webhook Token",
                 parent=self,
             )
             return False
+
+        # Validate webhook header format (only if provided)
+        if webhook_header:
+            if webhook_header.lower() in self.dangerous_headers:
+                tb.dialogs.Messagebox.show_error(
+                    f"Cannot use '{webhook_header}' header. This is a protected HTTP header.",
+                    "Invalid Header",
+                    parent=self,
+                )
+                return False
+
+            if not all(c.isalnum() or c in "-_" for c in webhook_header):
+                tb.dialogs.Messagebox.show_error(
+                    f"Invalid header name '{webhook_header}'. "
+                    "Use only letters, numbers, hyphens, and underscores.",
+                    "Invalid Header",
+                    parent=self,
+                )
+                return False
 
         # Validate auth type
         auth_type = self.auth_type_var.get()
-        if auth_type not in ["none", "basic", "bearer"]:
+        if auth_type not in ["none", AuthType.BASIC.value, AuthType.BEARER.value]:
             tb.dialogs.Messagebox.show_error(
                 f"Invalid auth type: {auth_type}",
                 "Invalid Auth Type",
@@ -325,16 +342,33 @@ class SettingsWindow(tb.Toplevel):  # type: ignore[misc]
             )
             return False
 
+        # Validate auth credentials match auth type
+        if auth_type == AuthType.BASIC.value:
+            username = self.username_var.get()
+            password = self.password_var.get()
+            if not username or not password:
+                tb.dialogs.Messagebox.show_error(
+                    "Username and password are required when using BASIC authentication.",
+                    "Missing Credentials",
+                    parent=self,
+                )
+                return False
+        elif auth_type == AuthType.BEARER.value:
+            token = self.bearer_token_var.get()
+            if not token:
+                tb.dialogs.Messagebox.show_error(
+                    "Token is required when using BEARER authentication.",
+                    "Missing Token",
+                    parent=self,
+                )
+                return False
+
         return True
 
     def on_save(self) -> None:
         """Handle save button click."""
         if not self.validate_settings():
             return
-
-        assert settings.keybind is not None
-        assert settings.server is not None
-        assert settings.webhook is not None
 
         # Save keybind
         keybind_value = self.keybind_var.get()
@@ -351,14 +385,19 @@ class SettingsWindow(tb.Toplevel):  # type: ignore[misc]
         settings.server.url = self.server_url_var.get()
 
         # Save auth settings
-        auth_type = self.auth_type_var.get()
-        settings.server.auth_type = None if auth_type == "none" else auth_type
+        auth_type_str = self.auth_type_var.get()
+        if auth_type_str == "none":
+            settings.server.auth_type = None
+        elif auth_type_str == AuthType.BASIC.value:
+            settings.server.auth_type = AuthType.BASIC
+        elif auth_type_str == AuthType.BEARER.value:
+            settings.server.auth_type = AuthType.BEARER
 
-        if auth_type == "basic":
+        if auth_type_str == AuthType.BASIC.value:
             settings.server.username = self.username_var.get() if self.username_var.get() else None
             settings.server.password = self.password_var.get() if self.password_var.get() else None
             settings.server.token = None
-        elif auth_type == "bearer":
+        elif auth_type_str == AuthType.BEARER.value:
             settings.server.token = (
                 self.bearer_token_var.get() if self.bearer_token_var.get() else None
             )
@@ -371,8 +410,9 @@ class SettingsWindow(tb.Toplevel):  # type: ignore[misc]
 
         # Save webhook settings
         webhook_token = self.webhook_token_var.get()
+        webhook_header = self.webhook_header_var.get()
         settings.webhook.token = webhook_token if webhook_token else None
-        settings.webhook.header = self.webhook_header_var.get()
+        settings.webhook.header = webhook_header if webhook_header else None
 
         # Save to file
         settings.save()
