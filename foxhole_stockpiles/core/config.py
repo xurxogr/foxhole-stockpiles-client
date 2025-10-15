@@ -86,6 +86,7 @@ class AppSettings(BaseSettings):
 
     model_config = SettingsConfigDict(extra="ignore")
 
+    language: str = Field(description="Application language", default="en")
     keybind: KeybindSettings = Field(default_factory=KeybindSettings)
     server: ServerSettings = Field(default_factory=ServerSettings)
     webhook: WebhookSettings = Field(default_factory=WebhookSettings)

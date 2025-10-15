@@ -1,0 +1,83 @@
+{
+  "language_name": "Português",
+  "app": {
+    "menu": {
+      "settings": "Configurações",
+      "configure": "Configurar"
+    },
+    "button": {
+      "start_capture": "Iniciar captura",
+      "stop_capture": "Parar captura"
+    },
+    "message": {
+      "keybind_not_set": "A tecla não está definida. A captura está desativada até que uma tecla seja definida.",
+      "auth_not_configured": "A autenticação não está configurada. A captura está desativada até que a autenticação seja configurada.",
+      "settings_saved": "Configurações salvas com sucesso.",
+      "capture_disabled": "A captura está desativada.",
+      "capture_enabled": "A captura agora está ativada.",
+      "foxhole_not_running": "Foxhole não está em execução",
+      "foxhole_minimized": "Foxhole está minimizado",
+      "foxhole_not_active": "Foxhole deve ser a janela ativa",
+      "sending_screenshot": "Enviando captura...",
+      "error_sending_image": "Erro ao enviar a imagem."
+    }
+  },
+  "settings": {
+    "title": "Configurações",
+    "tab": {
+      "keybind": "Teclas",
+      "server": "Servidor",
+      "webhook": "Webhook",
+      "language": "Idioma"
+    },
+    "button": {
+      "cancel": "Cancelar",
+      "save": "Salvar",
+      "change": "Alterar"
+    },
+    "keybind": {
+      "title": "Tecla para Captura",
+      "label_key": "Tecla:",
+      "hint": "Pressione a combinação de teclas que deseja usar para capturas",
+      "no_key_defined": "Nenhuma tecla definida. Clique em 'Alterar' para definir uma tecla",
+      "waiting": "Aguardando nova tecla...",
+      "invalid_key": "Tecla inválida detectada:"
+    },
+    "server": {
+      "title": "Configuração do Servidor",
+      "label_url": "URL do Servidor:",
+      "auth_title": "Autenticação",
+      "label_auth_type": "Tipo de Autenticação:",
+      "auth_none": "nenhuma",
+      "label_username": "Nome de Usuário:",
+      "label_password": "Senha:",
+      "label_token": "Token:"
+    },
+    "webhook": {
+      "title": "Autenticação de Webhook",
+      "hint": "Opcional: Configure um cabeçalho personalizado para encaminhamento de webhook",
+      "label_token": "Token:",
+      "label_header": "Nome do Cabeçalho:"
+    },
+    "language": {
+      "title": "Configurações de Idioma",
+      "label_language": "Idioma:",
+      "hint": "Selecione seu idioma preferido"
+    },
+    "validation": {
+      "invalid_header": "Cabeçalho Inválido",
+      "protected_header": "Não é possível usar o cabeçalho '{header}'. Este é um cabeçalho HTTP protegido.",
+      "invalid_header_format": "Nome de cabeçalho inválido '{header}'. Use apenas letras, números, hífens e sublinhados.",
+      "invalid_auth_type": "Tipo de Autenticação Inválido",
+      "invalid_auth_type_message": "Tipo de autenticação inválido: {auth_type}",
+      "missing_credentials": "Credenciais Ausentes",
+      "basic_auth_required": "Nome de usuário e senha são obrigatórios ao usar autenticação BASIC.",
+      "missing_token": "Token Ausente",
+      "bearer_token_required": "O token é obrigatório ao usar autenticação BEARER.",
+      "missing_webhook_header": "Cabeçalho de Webhook Ausente",
+      "webhook_header_required": "O nome do cabeçalho é obrigatório quando o token de webhook está definido.",
+      "missing_webhook_token": "Token de Webhook Ausente",
+      "webhook_token_required": "O token de webhook é obrigatório quando o nome do cabeçalho está definido."
+    }
+  }
+}

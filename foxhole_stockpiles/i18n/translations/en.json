@@ -1,0 +1,83 @@
+{
+  "language_name": "English",
+  "app": {
+    "menu": {
+      "settings": "Settings",
+      "configure": "Configure"
+    },
+    "button": {
+      "start_capture": "Start capture",
+      "stop_capture": "Stop Capture"
+    },
+    "message": {
+      "keybind_not_set": "Keybind is not set. Capture is disabled until a keybind is set.",
+      "auth_not_configured": "Authentication is not configured. Capture is disabled until auth is set.",
+      "settings_saved": "Settings saved successfully.",
+      "capture_disabled": "Capture is disabled.",
+      "capture_enabled": "Capture is now enabled.",
+      "foxhole_not_running": "Foxhole is not running",
+      "foxhole_minimized": "Foxhole is minimized",
+      "foxhole_not_active": "Foxhole should be the active window",
+      "sending_screenshot": "Sending screenshot...",
+      "error_sending_image": "Error sending the image."
+    }
+  },
+  "settings": {
+    "title": "Settings",
+    "tab": {
+      "keybind": "Keybind",
+      "server": "Server",
+      "webhook": "Webhook",
+      "language": "Language"
+    },
+    "button": {
+      "cancel": "Cancel",
+      "save": "Save",
+      "change": "Change"
+    },
+    "keybind": {
+      "title": "Screenshot Keybind",
+      "label_key": "Key:",
+      "hint": "Press the key combination you want to use for taking screenshots",
+      "no_key_defined": "No key defined. Click 'Change' to set a key",
+      "waiting": "Waiting for a new key...",
+      "invalid_key": "Invalid key detected:"
+    },
+    "server": {
+      "title": "Server Configuration",
+      "label_url": "Server URL:",
+      "auth_title": "Authentication",
+      "label_auth_type": "Auth Type:",
+      "auth_none": "none",
+      "label_username": "Username:",
+      "label_password": "Password:",
+      "label_token": "Token:"
+    },
+    "webhook": {
+      "title": "Webhook Forward Auth",
+      "hint": "Optional: Configure a custom header for webhook forwarding",
+      "label_token": "Token:",
+      "label_header": "Header Name:"
+    },
+    "language": {
+      "title": "Language Settings",
+      "label_language": "Language:",
+      "hint": "Select your preferred language"
+    },
+    "validation": {
+      "invalid_header": "Invalid Header",
+      "protected_header": "Cannot use '{header}' header. This is a protected HTTP header.",
+      "invalid_header_format": "Invalid header name '{header}'. Use only letters, numbers, hyphens, and underscores.",
+      "invalid_auth_type": "Invalid Auth Type",
+      "invalid_auth_type_message": "Invalid auth type: {auth_type}",
+      "missing_credentials": "Missing Credentials",
+      "basic_auth_required": "Username and password are required when using BASIC authentication.",
+      "missing_token": "Missing Token",
+      "bearer_token_required": "Token is required when using BEARER authentication.",
+      "missing_webhook_header": "Missing Webhook Header",
+      "webhook_header_required": "Header name is required when webhook token is set.",
+      "missing_webhook_token": "Missing Webhook Token",
+      "webhook_token_required": "Webhook token is required when header name is set."
+    }
+  }
+}

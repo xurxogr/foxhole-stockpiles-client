@@ -1,0 +1,83 @@
+{
+  "language_name": "Deutsch",
+  "app": {
+    "menu": {
+      "settings": "Einstellungen",
+      "configure": "Konfigurieren"
+    },
+    "button": {
+      "start_capture": "Aufnahme starten",
+      "stop_capture": "Aufnahme stoppen"
+    },
+    "message": {
+      "keybind_not_set": "Die Taste ist nicht festgelegt. Die Aufnahme ist deaktiviert, bis eine Taste festgelegt wurde.",
+      "auth_not_configured": "Die Authentifizierung ist nicht konfiguriert. Die Aufnahme ist deaktiviert, bis die Authentifizierung eingerichtet wurde.",
+      "settings_saved": "Einstellungen erfolgreich gespeichert.",
+      "capture_disabled": "Die Aufnahme ist deaktiviert.",
+      "capture_enabled": "Die Aufnahme ist jetzt aktiviert.",
+      "foxhole_not_running": "Foxhole läuft nicht",
+      "foxhole_minimized": "Foxhole ist minimiert",
+      "foxhole_not_active": "Foxhole muss das aktive Fenster sein",
+      "sending_screenshot": "Screenshot wird gesendet...",
+      "error_sending_image": "Fehler beim Senden des Bildes."
+    }
+  },
+  "settings": {
+    "title": "Einstellungen",
+    "tab": {
+      "keybind": "Tastenbelegung",
+      "server": "Server",
+      "webhook": "Webhook",
+      "language": "Sprache"
+    },
+    "button": {
+      "cancel": "Abbrechen",
+      "save": "Speichern",
+      "change": "Ändern"
+    },
+    "keybind": {
+      "title": "Screenshot-Tastenbelegung",
+      "label_key": "Taste:",
+      "hint": "Drücken Sie die Tastenkombination, die Sie für Screenshots verwenden möchten",
+      "no_key_defined": "Keine Taste definiert. Klicken Sie auf 'Ändern', um eine Taste festzulegen",
+      "waiting": "Warte auf eine neue Taste...",
+      "invalid_key": "Ungültige Taste erkannt:"
+    },
+    "server": {
+      "title": "Server-Konfiguration",
+      "label_url": "Server-URL:",
+      "auth_title": "Authentifizierung",
+      "label_auth_type": "Authentifizierungstyp:",
+      "auth_none": "keine",
+      "label_username": "Benutzername:",
+      "label_password": "Passwort:",
+      "label_token": "Token:"
+    },
+    "webhook": {
+      "title": "Webhook-Authentifizierung",
+      "hint": "Optional: Konfigurieren Sie einen benutzerdefinierten Header für die Webhook-Weiterleitung",
+      "label_token": "Token:",
+      "label_header": "Header-Name:"
+    },
+    "language": {
+      "title": "Spracheinstellungen",
+      "label_language": "Sprache:",
+      "hint": "Wählen Sie Ihre bevorzugte Sprache"
+    },
+    "validation": {
+      "invalid_header": "Ungültiger Header",
+      "protected_header": "Der Header '{header}' kann nicht verwendet werden. Dies ist ein geschützter HTTP-Header.",
+      "invalid_header_format": "Ungültiger Header-Name '{header}'. Verwenden Sie nur Buchstaben, Zahlen, Bindestriche und Unterstriche.",
+      "invalid_auth_type": "Ungültiger Authentifizierungstyp",
+      "invalid_auth_type_message": "Ungültiger Authentifizierungstyp: {auth_type}",
+      "missing_credentials": "Fehlende Anmeldeinformationen",
+      "basic_auth_required": "Benutzername und Passwort sind erforderlich, wenn Sie BASIC-Authentifizierung verwenden.",
+      "missing_token": "Fehlendes Token",
+      "bearer_token_required": "Das Token ist erforderlich, wenn Sie BEARER-Authentifizierung verwenden.",
+      "missing_webhook_header": "Fehlender Webhook-Header",
+      "webhook_header_required": "Der Header-Name ist erforderlich, wenn das Webhook-Token festgelegt wurde.",
+      "missing_webhook_token": "Fehlendes Webhook-Token",
+      "webhook_token_required": "Das Webhook-Token ist erforderlich, wenn der Header-Name festgelegt wurde."
+    }
+  }
+}

@@ -1,0 +1,83 @@
+{
+  "language_name": "中文",
+  "app": {
+    "menu": {
+      "settings": "设置",
+      "configure": "配置"
+    },
+    "button": {
+      "start_capture": "开始捕获",
+      "stop_capture": "停止捕获"
+    },
+    "message": {
+      "keybind_not_set": "未设置按键。在设置按键之前，捕获功能已禁用。",
+      "auth_not_configured": "未配置身份验证。在设置身份验证之前，捕获功能已禁用。",
+      "settings_saved": "设置已成功保存。",
+      "capture_disabled": "捕获已禁用。",
+      "capture_enabled": "捕获现已启用。",
+      "foxhole_not_running": "Foxhole 未运行",
+      "foxhole_minimized": "Foxhole 已最小化",
+      "foxhole_not_active": "Foxhole 必须是活动窗口",
+      "sending_screenshot": "正在发送截图...",
+      "error_sending_image": "发送图片时出错。"
+    }
+  },
+  "settings": {
+    "title": "设置",
+    "tab": {
+      "keybind": "按键",
+      "server": "服务器",
+      "webhook": "Webhook",
+      "language": "语言"
+    },
+    "button": {
+      "cancel": "取消",
+      "save": "保存",
+      "change": "更改"
+    },
+    "keybind": {
+      "title": "截图按键",
+      "label_key": "按键：",
+      "hint": "按下您想用于截图的组合键",
+      "no_key_defined": "未定义按键。点击'更改'以设置按键",
+      "waiting": "等待新按键...",
+      "invalid_key": "检测到无效按键："
+    },
+    "server": {
+      "title": "服务器配置",
+      "label_url": "服务器 URL：",
+      "auth_title": "身份验证",
+      "label_auth_type": "验证类型：",
+      "auth_none": "无",
+      "label_username": "用户名：",
+      "label_password": "密码：",
+      "label_token": "令牌："
+    },
+    "webhook": {
+      "title": "Webhook 身份验证",
+      "hint": "可选：为 webhook 转发配置自定义标头",
+      "label_token": "令牌：",
+      "label_header": "标头名称："
+    },
+    "language": {
+      "title": "语言设置",
+      "label_language": "语言：",
+      "hint": "选择您的首选语言"
+    },
+    "validation": {
+      "invalid_header": "无效标头",
+      "protected_header": "无法使用标头 '{header}'。这是受保护的 HTTP 标头。",
+      "invalid_header_format": "标头名称 '{header}' 无效。仅使用字母、数字、连字符和下划线。",
+      "invalid_auth_type": "无效的验证类型",
+      "invalid_auth_type_message": "无效的验证类型：{auth_type}",
+      "missing_credentials": "缺少凭据",
+      "basic_auth_required": "使用 BASIC 身份验证时需要用户名和密码。",
+      "missing_token": "缺少令牌",
+      "bearer_token_required": "使用 BEARER 身份验证时需要令牌。",
+      "missing_webhook_header": "缺少 Webhook 标头",
+      "webhook_header_required": "设置 webhook 令牌时需要标头名称。",
+      "missing_webhook_token": "缺少 Webhook 令牌",
+      "webhook_token_required": "设置标头名称时需要 webhook 令牌。"
+    }
+  }
+}

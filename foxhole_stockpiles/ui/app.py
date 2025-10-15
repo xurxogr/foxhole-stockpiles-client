@@ -30,6 +30,7 @@ from ttkbootstrap.constants import (
 
 from foxhole_stockpiles.core.config import settings
 from foxhole_stockpiles.enums.auth_type import AuthType
+from foxhole_stockpiles.i18n import get_translator, t
 from foxhole_stockpiles.models.keypress import KeyPress
 from foxhole_stockpiles.ui.settings_window import SettingsWindow
 
@@ -61,6 +62,9 @@ class App(tb.Window):  # type: ignore[misc]
             resizable=(False, False),
         )
 
+        # Initialize translator with configured language
+        get_translator(settings.language)
+
         self._counter = 0
         self._capture_enabled = False
         self._thread = None
@@ -86,13 +90,11 @@ class App(tb.Window):  # type: ignore[misc]
 
         # Change the status of the capture button if options are not set
         if not settings.keybind.key:
-            self.message(message="Keybind is not set. Capture is disabled until a keybind is set.")
+            self.message(message=t("app.message.keybind_not_set"))
             self.capture_button.configure(state=DISABLED)
 
         if not self._check_auth_configured():
-            self.message(
-                message="Authentication is not configured. Capture is disabled until auth is set."
-            )
+            self.message(message=t("app.message.auth_not_configured"))
             self.capture_button.configure(state=DISABLED)
 
         self.mainloop()
@@ -100,12 +102,12 @@ class App(tb.Window):  # type: ignore[misc]
     def create_widgets(self) -> None:
         """Create the widgets for the window."""
         # Menu
-        menubar = tb.Menu(self)
-        self.config(menu=menubar)
+        self.menubar = tb.Menu(self)
+        self.config(menu=self.menubar)
 
-        settings_menu = tb.Menu(menubar, tearoff=0)
-        menubar.add_cascade(label="Settings", menu=settings_menu)
-        settings_menu.add_command(label="Configure", command=self.command_settings)
+        self.settings_menu = tb.Menu(self.menubar, tearoff=0)
+        self.menubar.add_cascade(label=t("app.menu.settings"), menu=self.settings_menu)
+        self.settings_menu.add_command(label=t("app.menu.configure"), command=self.command_settings)
 
         # Main Frame
         main_frame = tb.Frame(self, padding=10)
@@ -116,7 +118,7 @@ class App(tb.Window):  # type: ignore[misc]
         # Buttons
         self.capture_button = tb.Button(
             buttons_frame,
-            text="Start capture",
+            text=t("app.button.start_capture"),
             command=self.command_capture,
             bootstyle=LIGHT,
         )
@@ -136,6 +138,18 @@ class App(tb.Window):  # type: ignore[misc]
 
         self._text_area.configure(yscrollcommand=scrollbar.set)
 
+    def update_ui_language(self) -> None:
+        """Update all UI text elements with current language translations."""
+        # Update menu labels
+        self.menubar.entryconfigure(0, label=t("app.menu.settings"))
+        self.settings_menu.entryconfigure(0, label=t("app.menu.configure"))
+
+        # Update capture button text based on current state
+        if self._capture_enabled:
+            self.capture_button.configure(text=t("app.button.stop_capture"))
+        else:
+            self.capture_button.configure(text=t("app.button.start_capture"))
+
     # Menu Commands
     def command_settings(self) -> None:
         """'Settings' callback. Opens the settings configuration window."""
@@ -143,7 +157,10 @@ class App(tb.Window):  # type: ignore[misc]
         saved = settings_window.show()
 
         if saved:
-            self.message(message="Settings saved successfully.")
+            # Update UI language if it changed
+            self.update_ui_language()
+
+            self.message(message=t("app.message.settings_saved"))
 
             # Update hotkey if keybind changed
             if settings.keybind.key:
@@ -165,14 +182,14 @@ class App(tb.Window):  # type: ignore[misc]
         Used to enable or disable the global keypress to take screenshots of Foxhole.
         """
         if self._capture_enabled:
-            self.capture_button.configure(text="Start Capture", bootstyle=LIGHT)
-            self.message("Capture is disabled.")
+            self.capture_button.configure(text=t("app.button.start_capture"), bootstyle=LIGHT)
+            self.message(t("app.message.capture_disabled"))
             if self._thread:
                 self._thread.stop()
                 self._thread = None
         else:
-            self.message("Capture is now enabled.")
-            self.capture_button.configure(text="Stop Capture", bootstyle=DANGER)
+            self.message(t("app.message.capture_enabled"))
+            self.capture_button.configure(text=t("app.button.stop_capture"), bootstyle=DANGER)
             self._thread = keyboard.GlobalHotKeys({self._hotkey: self.command_screenshot})
             self._thread.start()
 
@@ -198,7 +215,7 @@ class App(tb.Window):  # type: ignore[misc]
         """
         self._counter += 1
         current_screenshot = self._counter
-        self.message(message=f"[{current_screenshot}] Sending screenshot...")
+        self.message(message=f"[{current_screenshot}] {t('app.message.sending_screenshot')}")
         byte_io = BytesIO()
         img.save(byte_io, "png")
         byte_io.seek(0)
@@ -235,7 +252,8 @@ class App(tb.Window):  # type: ignore[misc]
                     files={"image": ("screenshot.png", byte_io, "image/png")},
                 )
             except Exception as ex:
-                self.message(message=f"[{current_screenshot}] Error sending the image. {ex}")
+                error_msg = f"[{current_screenshot}] {t('app.message.error_sending_image')} {ex}"
+                self.message(message=error_msg)
             else:
                 try:
                     text = response.json().get("message")
@@ -246,7 +264,7 @@ class App(tb.Window):  # type: ignore[misc]
                     self.message(message=f"[{current_screenshot}] {text}")
                 else:
                     error_msg = (
-                        f"[{current_screenshot}] Error sending the image. "
+                        f"[{current_screenshot}] {t('app.message.error_sending_image')} "
                         f"Status_code: {response.status_code}. Error: {text}"
                     )
                     self.message(message=error_msg)
@@ -256,15 +274,15 @@ class App(tb.Window):  # type: ignore[misc]
         try:
             foxhole = pywinctl.getWindowsWithTitle(title="War", condition=pywinctl.Re.STARTSWITH)[0]
         except Exception:
-            self.message(message="Foxhole is not running")
+            self.message(message=t("app.message.foxhole_not_running"))
             return None
 
         if foxhole.isMinimized:
-            self.message(message="Foxhole is minimized")
+            self.message(message=t("app.message.foxhole_minimized"))
             return None
 
         if not foxhole.isActive:
-            self.message(message="Foxhole should be the active window")
+            self.message(message=t("app.message.foxhole_not_active"))
             return None
 
         region = foxhole.getClientFrame()

@@ -1,0 +1,83 @@
+{
+  "language_name": "Français",
+  "app": {
+    "menu": {
+      "settings": "Paramètres",
+      "configure": "Configurer"
+    },
+    "button": {
+      "start_capture": "Démarrer la capture",
+      "stop_capture": "Arrêter la capture"
+    },
+    "message": {
+      "keybind_not_set": "La touche n'est pas définie. La capture est désactivée jusqu'à ce qu'une touche soit définie.",
+      "auth_not_configured": "L'authentification n'est pas configurée. La capture est désactivée jusqu'à ce que l'authentification soit configurée.",
+      "settings_saved": "Paramètres enregistrés avec succès.",
+      "capture_disabled": "La capture est désactivée.",
+      "capture_enabled": "La capture est maintenant activée.",
+      "foxhole_not_running": "Foxhole n'est pas en cours d'exécution",
+      "foxhole_minimized": "Foxhole est minimisé",
+      "foxhole_not_active": "Foxhole doit être la fenêtre active",
+      "sending_screenshot": "Envoi de la capture...",
+      "error_sending_image": "Erreur lors de l'envoi de l'image."
+    }
+  },
+  "settings": {
+    "title": "Paramètres",
+    "tab": {
+      "keybind": "Touches",
+      "server": "Serveur",
+      "webhook": "Webhook",
+      "language": "Langue"
+    },
+    "button": {
+      "cancel": "Annuler",
+      "save": "Enregistrer",
+      "change": "Modifier"
+    },
+    "keybind": {
+      "title": "Touche de capture",
+      "label_key": "Touche :",
+      "hint": "Appuyez sur la combinaison de touches que vous souhaitez utiliser pour les captures",
+      "no_key_defined": "Aucune touche définie. Cliquez sur 'Modifier' pour définir une touche",
+      "waiting": "En attente d'une nouvelle touche...",
+      "invalid_key": "Touche invalide détectée :"
+    },
+    "server": {
+      "title": "Configuration du serveur",
+      "label_url": "URL du serveur :",
+      "auth_title": "Authentification",
+      "label_auth_type": "Type d'authentification :",
+      "auth_none": "aucune",
+      "label_username": "Nom d'utilisateur :",
+      "label_password": "Mot de passe :",
+      "label_token": "Jeton :"
+    },
+    "webhook": {
+      "title": "Authentification Webhook",
+      "hint": "Optionnel : Configurez un en-tête personnalisé pour le transfert de webhook",
+      "label_token": "Jeton :",
+      "label_header": "Nom de l'en-tête :"
+    },
+    "language": {
+      "title": "Paramètres de langue",
+      "label_language": "Langue :",
+      "hint": "Sélectionnez votre langue préférée"
+    },
+    "validation": {
+      "invalid_header": "En-tête invalide",
+      "protected_header": "Impossible d'utiliser l'en-tête '{header}'. Il s'agit d'un en-tête HTTP protégé.",
+      "invalid_header_format": "Nom d'en-tête invalide '{header}'. Utilisez uniquement des lettres, des chiffres, des tirets et des traits de soulignement.",
+      "invalid_auth_type": "Type d'authentification invalide",
+      "invalid_auth_type_message": "Type d'authentification invalide : {auth_type}",
+      "missing_credentials": "Identifiants manquants",
+      "basic_auth_required": "Le nom d'utilisateur et le mot de passe sont requis lors de l'utilisation de l'authentification BASIC.",
+      "missing_token": "Jeton manquant",
+      "bearer_token_required": "Le jeton est requis lors de l'utilisation de l'authentification BEARER.",
+      "missing_webhook_header": "En-tête Webhook manquant",
+      "webhook_header_required": "Le nom de l'en-tête est requis lorsque le jeton webhook est défini.",
+      "missing_webhook_token": "Jeton Webhook manquant",
+      "webhook_token_required": "Le jeton webhook est requis lorsque le nom de l'en-tête est défini."
+    }
+  }
+}

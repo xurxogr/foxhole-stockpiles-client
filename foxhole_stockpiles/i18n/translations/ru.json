@@ -1,0 +1,83 @@
+{
+  "language_name": "Русский",
+  "app": {
+    "menu": {
+      "settings": "Настройки",
+      "configure": "Настроить"
+    },
+    "button": {
+      "start_capture": "Начать захват",
+      "stop_capture": "Остановить захват"
+    },
+    "message": {
+      "keybind_not_set": "Клавиша не установлена. Захват отключен до тех пор, пока не будет установлена клавиша.",
+      "auth_not_configured": "Аутентификация не настроена. Захват отключен до настройки аутентификации.",
+      "settings_saved": "Настройки успешно сохранены.",
+      "capture_disabled": "Захват отключен.",
+      "capture_enabled": "Захват теперь включен.",
+      "foxhole_not_running": "Foxhole не запущен",
+      "foxhole_minimized": "Foxhole свернут",
+      "foxhole_not_active": "Foxhole должен быть активным окном",
+      "sending_screenshot": "Отправка скриншота...",
+      "error_sending_image": "Ошибка отправки изображения."
+    }
+  },
+  "settings": {
+    "title": "Настройки",
+    "tab": {
+      "keybind": "Клавиши",
+      "server": "Сервер",
+      "webhook": "Webhook",
+      "language": "Язык"
+    },
+    "button": {
+      "cancel": "Отмена",
+      "save": "Сохранить",
+      "change": "Изменить"
+    },
+    "keybind": {
+      "title": "Клавиша для скриншота",
+      "label_key": "Клавиша:",
+      "hint": "Нажмите комбинацию клавиш, которую хотите использовать для создания скриншотов",
+      "no_key_defined": "Клавиша не определена. Нажмите 'Изменить', чтобы задать клавишу",
+      "waiting": "Ожидание новой клавиши...",
+      "invalid_key": "Обнаружена недопустимая клавиша:"
+    },
+    "server": {
+      "title": "Конфигурация сервера",
+      "label_url": "URL сервера:",
+      "auth_title": "Аутентификация",
+      "label_auth_type": "Тип аутентификации:",
+      "auth_none": "нет",
+      "label_username": "Имя пользователя:",
+      "label_password": "Пароль:",
+      "label_token": "Токен:"
+    },
+    "webhook": {
+      "title": "Аутентификация Webhook",
+      "hint": "Необязательно: Настройте пользовательский заголовок для пересылки webhook",
+      "label_token": "Токен:",
+      "label_header": "Имя заголовка:"
+    },
+    "language": {
+      "title": "Настройки языка",
+      "label_language": "Язык:",
+      "hint": "Выберите предпочитаемый язык"
+    },
+    "validation": {
+      "invalid_header": "Недопустимый заголовок",
+      "protected_header": "Невозможно использовать заголовок '{header}'. Это защищенный HTTP-заголовок.",
+      "invalid_header_format": "Недопустимое имя заголовка '{header}'. Используйте только буквы, цифры, дефисы и подчеркивания.",
+      "invalid_auth_type": "Недопустимый тип аутентификации",
+      "invalid_auth_type_message": "Недопустимый тип аутентификации: {auth_type}",
+      "missing_credentials": "Отсутствуют учетные данные",
+      "basic_auth_required": "Имя пользователя и пароль обязательны при использовании аутентификации BASIC.",
+      "missing_token": "Отсутствует токен",
+      "bearer_token_required": "Токен обязателен при использовании аутентификации BEARER.",
+      "missing_webhook_header": "Отсутствует заголовок Webhook",
+      "webhook_header_required": "Имя заголовка обязательно, когда установлен токен webhook.",
+      "missing_webhook_token": "Отсутствует токен Webhook",
+      "webhook_token_required": "Токен webhook обязателен, когда установлено имя заголовка."
+    }
+  }
+}

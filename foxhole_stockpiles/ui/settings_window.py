@@ -8,6 +8,7 @@ from ttkbootstrap.constants import BOTH, BOTTOM, LEFT, PRIMARY, RIGHT, SECONDARY
 
 from foxhole_stockpiles.core.config import settings
 from foxhole_stockpiles.enums.auth_type import AuthType
+from foxhole_stockpiles.i18n import get_available_languages, get_translator, t
 from foxhole_stockpiles.models.keypress import KeyPress
 
 
@@ -21,7 +22,7 @@ class SettingsWindow(tb.Toplevel):  # type: ignore[misc]
             parent: Parent window
         """
         super().__init__(parent, minsize=(600, 400), resizable=(False, False))
-        self.title("Settings")
+        self.title(t("settings.title"))
         self.grab_set()  # Make the window modal
         self.result = False  # Track if settings were saved
 
@@ -75,29 +76,43 @@ class SettingsWindow(tb.Toplevel):  # type: ignore[misc]
 
         # Keybind tab
         keybind_frame = tb.Frame(notebook, padding=10)
-        notebook.add(keybind_frame, text="Keybind")
+        notebook.add(keybind_frame, text=t("settings.tab.keybind"))
         self.create_keybind_tab(keybind_frame)
 
         # Server tab
         server_frame = tb.Frame(notebook, padding=10)
-        notebook.add(server_frame, text="Server")
+        notebook.add(server_frame, text=t("settings.tab.server"))
         self.create_server_tab(server_frame)
 
         # Webhook tab
         webhook_frame = tb.Frame(notebook, padding=10)
-        notebook.add(webhook_frame, text="Webhook")
+        notebook.add(webhook_frame, text=t("settings.tab.webhook"))
         self.create_webhook_tab(webhook_frame)
+
+        # Language tab
+        language_frame = tb.Frame(notebook, padding=10)
+        notebook.add(language_frame, text=t("settings.tab.language"))
+        self.create_language_tab(language_frame)
 
         # Buttons at bottom
         button_frame = tb.Frame(main_frame, padding=(0, 10, 0, 0))
         button_frame.pack(fill=X, side=BOTTOM)
 
-        tb.Button(button_frame, text="Cancel", command=self.on_cancel, bootstyle=SECONDARY).pack(
-            side=RIGHT, padx=5
+        cancel_button = tb.Button(
+            button_frame,
+            text=t("settings.button.cancel"),
+            command=self.on_cancel,
+            bootstyle=SECONDARY,
         )
-        tb.Button(button_frame, text="Save", command=self.on_save, bootstyle=PRIMARY).pack(
-            side=RIGHT, padx=5
+        cancel_button.pack(side=RIGHT, padx=5)
+
+        save_button = tb.Button(
+            button_frame,
+            text=t("settings.button.save"),
+            command=self.on_save,
+            bootstyle=PRIMARY,
         )
+        save_button.pack(side=RIGHT, padx=5)
 
     def create_keybind_tab(self, parent: Any) -> None:
         """Create keybind configuration tab.
@@ -105,7 +120,7 @@ class SettingsWindow(tb.Toplevel):  # type: ignore[misc]
         Args:
             parent: Parent frame
         """
-        tb.Label(parent, text="Screenshot Keybind", font=("", 12, "bold")).pack(
+        tb.Label(parent, text=t("settings.keybind.title"), font=("", 12, "bold")).pack(
             anchor="w", pady=(0, 10)
         )
 
@@ -113,20 +128,23 @@ class SettingsWindow(tb.Toplevel):  # type: ignore[misc]
         keybind_frame = tb.Frame(parent)
         keybind_frame.pack(fill=X, pady=5)
 
-        tb.Label(keybind_frame, text="Key:", width=15).pack(side=LEFT)
+        tb.Label(keybind_frame, text=t("settings.keybind.label_key"), width=22).pack(side=LEFT)
         self.keybind_var = tb.StringVar(
             value=settings.keybind.key
             if settings.keybind.key
-            else "No key defined. Click 'Change' to set a key"
+            else t("settings.keybind.no_key_defined")
         )
         tb.Entry(keybind_frame, textvariable=self.keybind_var, state="readonly").pack(
             side=LEFT, fill=X, expand=YES, padx=(0, 10)
         )
-        tb.Button(keybind_frame, text="Change", command=self.change_keybind).pack(side=LEFT)
+        change_button = tb.Button(
+            keybind_frame, text=t("settings.button.change"), command=self.change_keybind
+        )
+        change_button.pack(side=LEFT)
 
         tb.Label(
             parent,
-            text="Press the key combination you want to use for taking screenshots",
+            text=t("settings.keybind.hint"),
             font=("", 9),
         ).pack(anchor="w", pady=(5, 0))
 
@@ -136,14 +154,14 @@ class SettingsWindow(tb.Toplevel):  # type: ignore[misc]
         Args:
             parent: Parent frame
         """
-        tb.Label(parent, text="Server Configuration", font=("", 12, "bold")).pack(
+        tb.Label(parent, text=t("settings.server.title"), font=("", 12, "bold")).pack(
             anchor="w", pady=(0, 10)
         )
 
         # Server URL
         url_frame = tb.Frame(parent)
         url_frame.pack(fill=X, pady=5)
-        tb.Label(url_frame, text="Server URL:", width=15).pack(side=LEFT)
+        tb.Label(url_frame, text=t("settings.server.label_url"), width=22).pack(side=LEFT)
         self.server_url_var = tb.StringVar(value=settings.server.url)
         tb.Entry(url_frame, textvariable=self.server_url_var).pack(side=LEFT, fill=X, expand=YES)
 
@@ -151,21 +169,23 @@ class SettingsWindow(tb.Toplevel):  # type: ignore[misc]
         tb.Separator(parent, orient="horizontal").pack(fill=X, pady=20)
 
         # Authentication section
-        tb.Label(parent, text="Authentication", font=("", 12, "bold")).pack(
+        tb.Label(parent, text=t("settings.server.auth_title"), font=("", 12, "bold")).pack(
             anchor="w", pady=(0, 10)
         )
 
         # Auth type
         auth_frame = tb.Frame(parent)
         auth_frame.pack(fill=X, pady=5)
-        tb.Label(auth_frame, text="Auth Type:", width=15).pack(side=LEFT)
-        self.auth_type_var = tb.StringVar(
-            value=settings.server.auth_type.value if settings.server.auth_type else "none"
-        )
+        tb.Label(auth_frame, text=t("settings.server.label_auth_type"), width=22).pack(side=LEFT)
+        if settings.server.auth_type:
+            auth_value = settings.server.auth_type.value
+        else:
+            auth_value = t("settings.server.auth_none")
+        self.auth_type_var = tb.StringVar(value=auth_value)
         auth_combo = tb.Combobox(
             auth_frame,
             textvariable=self.auth_type_var,
-            values=["none", AuthType.BASIC.value, AuthType.BEARER.value],
+            values=[t("settings.server.auth_none"), AuthType.BASIC.value, AuthType.BEARER.value],
             state="readonly",
         )
         auth_combo.pack(side=LEFT, fill=X, expand=YES)
@@ -177,7 +197,7 @@ class SettingsWindow(tb.Toplevel):  # type: ignore[misc]
 
         username_frame = tb.Frame(self.basic_auth_frame)
         username_frame.pack(fill=X, pady=5)
-        tb.Label(username_frame, text="Username:", width=15).pack(side=LEFT)
+        tb.Label(username_frame, text=t("settings.server.label_username"), width=22).pack(side=LEFT)
         self.username_var = tb.StringVar(
             value=settings.server.username if settings.server.username else ""
         )
@@ -185,7 +205,7 @@ class SettingsWindow(tb.Toplevel):  # type: ignore[misc]
 
         password_frame = tb.Frame(self.basic_auth_frame)
         password_frame.pack(fill=X, pady=5)
-        tb.Label(password_frame, text="Password:", width=15).pack(side=LEFT)
+        tb.Label(password_frame, text=t("settings.server.label_password"), width=22).pack(side=LEFT)
         self.password_var = tb.StringVar(
             value=settings.server.password if settings.server.password else ""
         )
@@ -199,7 +219,7 @@ class SettingsWindow(tb.Toplevel):  # type: ignore[misc]
 
         token_frame = tb.Frame(self.bearer_frame)
         token_frame.pack(fill=X, pady=5)
-        tb.Label(token_frame, text="Token:", width=15).pack(side=LEFT)
+        tb.Label(token_frame, text=t("settings.server.label_token"), width=22).pack(side=LEFT)
         self.bearer_token_var = tb.StringVar(
             value=settings.server.token if settings.server.token else ""
         )
@@ -216,20 +236,20 @@ class SettingsWindow(tb.Toplevel):  # type: ignore[misc]
         Args:
             parent: Parent frame
         """
-        tb.Label(parent, text="Webhook Forward Auth", font=("", 12, "bold")).pack(
+        tb.Label(parent, text=t("settings.webhook.title"), font=("", 12, "bold")).pack(
             anchor="w", pady=(0, 10)
         )
 
         tb.Label(
             parent,
-            text="Optional: Configure a custom header for webhook forwarding",
+            text=t("settings.webhook.hint"),
             font=("", 9),
         ).pack(anchor="w", pady=(0, 20))
 
         # Webhook token
         token_frame = tb.Frame(parent)
         token_frame.pack(fill=X, pady=5)
-        tb.Label(token_frame, text="Token:", width=15).pack(side=LEFT)
+        tb.Label(token_frame, text=t("settings.webhook.label_token"), width=22).pack(side=LEFT)
         self.webhook_token_var = tb.StringVar(
             value=settings.webhook.token if settings.webhook.token else ""
         )
@@ -240,13 +260,56 @@ class SettingsWindow(tb.Toplevel):  # type: ignore[misc]
         # Webhook header
         header_frame = tb.Frame(parent)
         header_frame.pack(fill=X, pady=5)
-        tb.Label(header_frame, text="Header Name:", width=15).pack(side=LEFT)
+        tb.Label(header_frame, text=t("settings.webhook.label_header"), width=22).pack(side=LEFT)
         self.webhook_header_var = tb.StringVar(
             value=settings.webhook.header if settings.webhook.header else ""
         )
         tb.Entry(header_frame, textvariable=self.webhook_header_var).pack(
             side=LEFT, fill=X, expand=YES
         )
+
+    def create_language_tab(self, parent: Any) -> None:
+        """Create language configuration tab.
+
+        Args:
+            parent: Parent frame
+        """
+        tb.Label(parent, text=t("settings.language.title"), font=("", 12, "bold")).pack(
+            anchor="w", pady=(0, 10)
+        )
+
+        tb.Label(
+            parent,
+            text=t("settings.language.hint"),
+            font=("", 9),
+        ).pack(anchor="w", pady=(0, 20))
+
+        # Language selection
+        lang_frame = tb.Frame(parent)
+        lang_frame.pack(fill=X, pady=5)
+        tb.Label(lang_frame, text=t("settings.language.label_language"), width=22).pack(side=LEFT)
+
+        # Get available languages dynamically
+        available_languages = get_available_languages()
+        language_names = [name for _, name in available_languages]
+        language_codes = {name: code for code, name in available_languages}
+
+        # Find current language name
+        current_lang_code = settings.language
+        current_lang_name = next(
+            (name for code, name in available_languages if code == current_lang_code), "English"
+        )
+
+        self.language_var = tb.StringVar(value=current_lang_name)
+        self.language_codes = language_codes
+
+        lang_combo = tb.Combobox(
+            lang_frame,
+            textvariable=self.language_var,
+            values=language_names,
+            state="readonly",
+        )
+        lang_combo.pack(side=LEFT, fill=X, expand=YES)
 
     def on_auth_type_changed(self, event: Any) -> None:
         """Handle auth type selection change.
@@ -268,7 +331,7 @@ class SettingsWindow(tb.Toplevel):  # type: ignore[misc]
 
     def change_keybind(self) -> None:
         """Change keybind callback. Opens a thread to capture a new keybind."""
-        self.keybind_var.set("Waiting for a new key...")
+        self.keybind_var.set(t("settings.keybind.waiting"))
         threading.Thread(target=self.read_keybind).start()
 
     def read_keybind(self) -> None:
@@ -277,7 +340,7 @@ class SettingsWindow(tb.Toplevel):  # type: ignore[misc]
         key = k.read_key()
 
         if not key:
-            self.keybind_var.set("No key defined. Click 'Change' to set a key")
+            self.keybind_var.set(t("settings.keybind.no_key_defined"))
             return
 
         try:
@@ -285,7 +348,7 @@ class SettingsWindow(tb.Toplevel):  # type: ignore[misc]
             k.prepare_for_global_hotkey(key)
             self.keybind_var.set(key)
         except ValueError:
-            self.keybind_var.set(f"Invalid key detected: {key}")
+            self.keybind_var.set(t("settings.keybind.invalid_key") + f" {key}")
 
     def validate_settings(self) -> bool:
         """Validate all settings before saving.
@@ -299,16 +362,16 @@ class SettingsWindow(tb.Toplevel):  # type: ignore[misc]
 
         if webhook_token and not webhook_header:
             tb.dialogs.Messagebox.show_error(
-                "Header name is required when webhook token is set.",
-                "Missing Webhook Header",
+                t("settings.validation.webhook_header_required"),
+                t("settings.validation.missing_webhook_header"),
                 parent=self,
             )
             return False
 
         if webhook_header and not webhook_token:
             tb.dialogs.Messagebox.show_error(
-                "Webhook token is required when header name is set.",
-                "Missing Webhook Token",
+                t("settings.validation.webhook_token_required"),
+                t("settings.validation.missing_webhook_token"),
                 parent=self,
             )
             return False
@@ -317,27 +380,27 @@ class SettingsWindow(tb.Toplevel):  # type: ignore[misc]
         if webhook_header:
             if webhook_header.lower() in self.dangerous_headers:
                 tb.dialogs.Messagebox.show_error(
-                    f"Cannot use '{webhook_header}' header. This is a protected HTTP header.",
-                    "Invalid Header",
+                    t("settings.validation.protected_header", header=webhook_header),
+                    t("settings.validation.invalid_header"),
                     parent=self,
                 )
                 return False
 
             if not all(c.isalnum() or c in "-_" for c in webhook_header):
                 tb.dialogs.Messagebox.show_error(
-                    f"Invalid header name '{webhook_header}'. "
-                    "Use only letters, numbers, hyphens, and underscores.",
-                    "Invalid Header",
+                    t("settings.validation.invalid_header_format", header=webhook_header),
+                    t("settings.validation.invalid_header"),
                     parent=self,
                 )
                 return False
 
         # Validate auth type
         auth_type = self.auth_type_var.get()
-        if auth_type not in ["none", AuthType.BASIC.value, AuthType.BEARER.value]:
+        valid_types = [t("settings.server.auth_none"), AuthType.BASIC.value, AuthType.BEARER.value]
+        if auth_type not in valid_types:
             tb.dialogs.Messagebox.show_error(
-                f"Invalid auth type: {auth_type}",
-                "Invalid Auth Type",
+                t("settings.validation.invalid_auth_type_message", auth_type=auth_type),
+                t("settings.validation.invalid_auth_type"),
                 parent=self,
             )
             return False
@@ -348,8 +411,8 @@ class SettingsWindow(tb.Toplevel):  # type: ignore[misc]
             password = self.password_var.get()
             if not username or not password:
                 tb.dialogs.Messagebox.show_error(
-                    "Username and password are required when using BASIC authentication.",
-                    "Missing Credentials",
+                    t("settings.validation.basic_auth_required"),
+                    t("settings.validation.missing_credentials"),
                     parent=self,
                 )
                 return False
@@ -357,8 +420,8 @@ class SettingsWindow(tb.Toplevel):  # type: ignore[misc]
             token = self.bearer_token_var.get()
             if not token:
                 tb.dialogs.Messagebox.show_error(
-                    "Token is required when using BEARER authentication.",
-                    "Missing Token",
+                    t("settings.validation.bearer_token_required"),
+                    t("settings.validation.missing_token"),
                     parent=self,
                 )
                 return False
@@ -372,10 +435,15 @@ class SettingsWindow(tb.Toplevel):  # type: ignore[misc]
 
         # Save keybind
         keybind_value = self.keybind_var.get()
+        no_key_msg = t("settings.keybind.no_key_defined")
+        invalid_key_msg = t("settings.keybind.invalid_key")
+        waiting_msg = t("settings.keybind.waiting")
+
         if (
             keybind_value
-            and not keybind_value.startswith("No key")
-            and not keybind_value.startswith("Invalid")
+            and keybind_value != no_key_msg
+            and not keybind_value.startswith(invalid_key_msg)
+            and keybind_value != waiting_msg
         ):
             settings.keybind.key = keybind_value
         else:
@@ -386,7 +454,7 @@ class SettingsWindow(tb.Toplevel):  # type: ignore[misc]
 
         # Save auth settings
         auth_type_str = self.auth_type_var.get()
-        if auth_type_str == "none":
+        if auth_type_str == t("settings.server.auth_none"):
             settings.server.auth_type = None
         elif auth_type_str == AuthType.BASIC.value:
             settings.server.auth_type = AuthType.BASIC
@@ -413,6 +481,14 @@ class SettingsWindow(tb.Toplevel):  # type: ignore[misc]
         webhook_header = self.webhook_header_var.get()
         settings.webhook.token = webhook_token if webhook_token else None
         settings.webhook.header = webhook_header if webhook_header else None
+
+        # Save language settings
+        language_name = self.language_var.get()
+        language_code = self.language_codes.get(language_name, "en")
+        settings.language = language_code
+
+        # Update translator with new language
+        get_translator(language_code)
 
         # Save to file
         settings.save()
