@@ -1,0 +1,83 @@
+{
+  "language_name": "Türkçe",
+  "app": {
+    "menu": {
+      "settings": "Ayarlar",
+      "configure": "Yapılandır"
+    },
+    "button": {
+      "start_capture": "Yakalamayı Başlat",
+      "stop_capture": "Yakalamayı Durdur"
+    },
+    "message": {
+      "keybind_not_set": "Kısayol tuşu ayarlanmadı. Kısayol tuşu ayarlanana kadar yakalama devre dışıdır.",
+      "auth_not_configured": "Kimlik doğrulama yapılandırılmadı. Kimlik doğrulaması yapılana kadar yakalama devre dışıdır.",
+      "settings_saved": "Ayarlar başarıyla kaydedildi.",
+      "capture_disabled": "Yakalama devre dışı bırakıldı.",
+      "capture_enabled": "Yakalama artık etkin.",
+      "foxhole_not_running": "Foxhole çalışmıyor",
+      "foxhole_minimized": "Foxhole simge durumunda",
+      "foxhole_not_active": "Foxhole aktif pencere olmalı",
+      "sending_screenshot": "Ekran görüntüsü gönderiliyor...",
+      "error_sending_image": "Görüntü gönderilirken hata oluştu."
+    }
+  },
+  "settings": {
+    "title": "Ayarlar",
+    "tab": {
+      "keybind": "Kısayol Tuşu",
+      "server": "Sunucu",
+      "webhook": "Webhook",
+      "language": "Dil"
+    },
+    "button": {
+      "cancel": "İptal",
+      "save": "Kaydet",
+      "change": "Değiştir"
+    },
+    "keybind": {
+      "title": "Ekran Görüntüsü Kısayol Tuşu",
+      "label_key": "Tuş:",
+      "hint": "Ekran görüntüsü almak için kullanmak istediğiniz tuş kombinasyonuna basın",
+      "no_key_defined": "Tanımlı tuş yok. Ayarlamak için 'Değiştir'e tıklayın",
+      "waiting": "Yeni tuş bekleniyor...",
+      "invalid_key": "Geçersiz tuş algılandı:"
+    },
+    "server": {
+      "title": "Sunucu Yapılandırması",
+      "label_url": "Sunucu URL’si:",
+      "auth_title": "Kimlik Doğrulama",
+      "label_auth_type": "Kimlik Türü:",
+      "auth_none": "yok",
+      "label_username": "Kullanıcı Adı:",
+      "label_password": "Parola:",
+      "label_token": "Token:"
+    },
+    "webhook": {
+      "title": "Webhook Yönlendirme Kimlik Doğrulaması",
+      "hint": "İsteğe bağlı: Webhook yönlendirmesi için özel bir başlık yapılandırın",
+      "label_token": "Token:",
+      "label_header": "Başlık Adı:"
+    },
+    "language": {
+      "title": "Dil Ayarları",
+      "label_language": "Dil:",
+      "hint": "Tercih ettiğiniz dili seçin"
+    },
+    "validation": {
+      "invalid_header": "Geçersiz Başlık",
+      "protected_header": "'{header}' başlığı kullanılamaz. Bu, korunan bir HTTP başlığıdır.",
+      "invalid_header_format": "Geçersiz başlık adı '{header}'. Sadece harfler, sayılar, tire ve alt çizgi kullanın.",
+      "invalid_auth_type": "Geçersiz Kimlik Türü",
+      "invalid_auth_type_message": "Geçersiz kimlik doğrulama türü: {auth_type}",
+      "missing_credentials": "Eksik Bilgiler",
+      "basic_auth_required": "BASIC kimlik doğrulaması kullanılırken kullanıcı adı ve parola gereklidir.",
+      "missing_token": "Eksik Token",
+      "bearer_token_required": "BEARER kimlik doğrulaması kullanılırken token gereklidir.",
+      "missing_webhook_header": "Eksik Webhook Başlığı",
+      "webhook_header_required": "Webhook tokeni ayarlandığında başlık adı gereklidir.",
+      "missing_webhook_token": "Eksik Webhook Tokeni",
+      "webhook_token_required": "Başlık adı ayarlandığında webhook tokeni gereklidir."
+    }
+  }
+}
