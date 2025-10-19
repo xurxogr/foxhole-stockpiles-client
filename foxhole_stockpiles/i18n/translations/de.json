@@ -6,20 +6,20 @@
       "configure": "Konfigurieren"
     },
     "button": {
-      "start_capture": "Aufnahme starten",
+      "start_capture": "Screenshot-Modus aktivieren",
       "stop_capture": "Aufnahme stoppen"
     },
     "message": {
-      "keybind_not_set": "Die Taste ist nicht festgelegt. Die Aufnahme ist deaktiviert, bis eine Taste festgelegt wurde.",
-      "auth_not_configured": "Die Authentifizierung ist nicht konfiguriert. Die Aufnahme ist deaktiviert, bis die Authentifizierung eingerichtet wurde.",
+      "keybind_not_set": "Die Taste ist nicht festgelegt. Der Screenshot-Modus ist deaktiviert, bis eine Taste festgelegt wurde.",
+      "auth_not_configured": "Die Authentifizierung ist nicht konfiguriert. Der Screenshot-Modus ist deaktiviert, bis die Authentifizierung eingerichtet wurde.",
       "settings_saved": "Einstellungen erfolgreich gespeichert.",
-      "capture_disabled": "Die Aufnahme ist deaktiviert.",
-      "capture_enabled": "Die Aufnahme ist jetzt aktiviert.",
+      "capture_disabled": "Der Screenshot-Modus ist deaktiviert.",
+      "capture_enabled": "Der Screenshot-Modus ist jetzt aktiviert.",
       "foxhole_not_running": "Foxhole läuft nicht",
       "foxhole_minimized": "Foxhole ist minimiert",
       "foxhole_not_active": "Foxhole muss das aktive Fenster sein",
       "sending_screenshot": "Screenshot wird gesendet...",
-      "error_sending_image": "Fehler beim Senden des Bildes."
+      "error_sending_image": "Fehler beim Senden des Screenshots."
     }
   },
   "settings": {
@@ -72,12 +72,12 @@
       "invalid_auth_type_message": "Ungültiger Authentifizierungstyp: {auth_type}",
       "missing_credentials": "Fehlende Anmeldeinformationen",
       "basic_auth_required": "Benutzername und Passwort sind erforderlich, wenn Sie BASIC-Authentifizierung verwenden.",
-      "missing_token": "Fehlendes Token",
-      "bearer_token_required": "Das Token ist erforderlich, wenn Sie BEARER-Authentifizierung verwenden.",
+      "missing_token": "Fehlender Token",
+      "bearer_token_required": "Der Token ist erforderlich, wenn Sie BEARER-Authentifizierung verwenden.",
       "missing_webhook_header": "Fehlender Webhook-Header",
-      "webhook_header_required": "Der Header-Name ist erforderlich, wenn das Webhook-Token festgelegt wurde.",
-      "missing_webhook_token": "Fehlendes Webhook-Token",
-      "webhook_token_required": "Das Webhook-Token ist erforderlich, wenn der Header-Name festgelegt wurde."
+      "webhook_header_required": "Der Header-Name ist erforderlich, wenn der Webhook-Token festgelegt wurde.",
+      "missing_webhook_token": "Fehlender Webhook-Token",
+      "webhook_token_required": "Der Webhook-Token ist erforderlich, wenn der Header-Name festgelegt wurde."
     }
   }
 }

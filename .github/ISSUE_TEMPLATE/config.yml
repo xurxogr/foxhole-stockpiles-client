@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Documentation
+    url: https://github.com/xurxogr/foxhole-stockpiles-client
+    about: Check the README for usage instructions and troubleshooting
+  - name: Server Documentation
+    url: https://github.com/xurxogr/foxhole-stockpiles
+    about: For server-related issues, check the server repository
