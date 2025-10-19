@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.0] - 2025-01-19
+
 ### Added
 - Comprehensive README.md with installation, configuration, and usage documentation
 - CONTRIBUTING.md with development workflow and code standards
@@ -89,7 +91,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Screenshot capture functionality (stores to disk)
 - Basic Foxhole window detection
 
-[Unreleased]: https://github.com/xurxogr/foxhole-stockpiles-client/compare/v0.5.0...HEAD
+[Unreleased]: https://github.com/xurxogr/foxhole-stockpiles-client/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/xurxogr/foxhole-stockpiles-client/compare/v0.5.0...v1.0.0
 [0.5.0]: https://github.com/xurxogr/foxhole-stockpiles-client/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/xurxogr/foxhole-stockpiles-client/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/xurxogr/foxhole-stockpiles-client/compare/v0.2.0...v0.3.0
