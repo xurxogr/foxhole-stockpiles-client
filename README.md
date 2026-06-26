@@ -1,5 +1,14 @@
 # Foxhole Stockpiles Client
 
+> ## ⚠️ This project is no longer maintained — Archived
+>
+> This client is **deprecated and unmaintained**. Its functionality is now
+> fully covered by **[Foxhole Stockpiles](https://github.com/xurxogr/foxhole-stockpiles)**,
+> which provides the same capabilities. Please use that project instead.
+>
+> This repository remains available for reference only. No further updates,
+> bug fixes, or support will be provided.
+
 [![Python 3.12+](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Windows](https://img.shields.io/badge/platform-windows-blue.svg)](https://www.microsoft.com/windows)
